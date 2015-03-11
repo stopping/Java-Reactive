@@ -11,9 +11,9 @@ public class StandardDependency implements ReactiveDependency {
 
   private List<ReactiveDependency> parents = new LinkedList<ReactiveDependency>();
   private List<ReactiveDependency> children = new LinkedList<ReactiveDependency>();
-  
+
   private ReactiveDependency updateableDependency;
-  
+
   public StandardDependency(ReactiveDependency dep) {
     updateableDependency = dep;
   }
