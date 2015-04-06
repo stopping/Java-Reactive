@@ -1,7 +1,7 @@
 package org.auvua.reactive;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * @author sean
@@ -9,22 +9,27 @@ import java.util.List;
  */
 public class StandardDependency implements ReactiveDependency {
 
-  private List<ReactiveDependency> parents = new LinkedList<ReactiveDependency>();
-  private List<ReactiveDependency> children = new LinkedList<ReactiveDependency>();
+  private Collection<ReactiveDependency> parents = new HashSet<ReactiveDependency>();
+  private Collection<ReactiveDependency> children = new HashSet<ReactiveDependency>();
 
   private ReactiveDependency updateableDependency;
+  private Runnable updateRunner;
+  private boolean updating = false;
 
   public StandardDependency(ReactiveDependency dep) {
     updateableDependency = dep;
+    updateRunner = () -> {
+      update();
+    };
   }
 
   @Override
-  public List<ReactiveDependency> getParents() {
+  public Collection<ReactiveDependency> getParents() {
     return parents;
   }
 
   @Override
-  public List<ReactiveDependency> getChildren() {
+  public Collection<ReactiveDependency> getChildren() {
     return children;
   }
 
@@ -52,6 +57,31 @@ public class StandardDependency implements ReactiveDependency {
   @Override
   public void update() {
     updateableDependency.update();
+  }
+
+  @Override
+  public Runnable getUpdateRunner() {
+    return updateRunner;
+  }
+
+  @Override
+  public void prepareUpdate() {
+    updating = true;
+  }
+
+  @Override
+  public void finishUpdate() {
+    updating = false;
+  }
+
+  @Override
+  public boolean isUpdating() {
+    return updating;
+  }
+
+  @Override
+  public void awaitUpdate() {
+    updateableDependency.awaitUpdate();
   }
 
 }

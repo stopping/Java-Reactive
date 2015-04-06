@@ -13,8 +13,6 @@ public class RxVarTest {
       return var1.val() + var2.val() + var3.val();
     });
 
-    RxVar<Boolean> bool = Rx.var(false);
-
     Rx.task(() -> {
       System.out.println("The sum: " + sum.val());
     });
@@ -22,14 +20,7 @@ public class RxVarTest {
     Rx.task(() -> {
       if(sum.val() > 5.0) {
         System.out.println("The sum of these numbers is greater than 5!");
-        bool.set(true);
-      } else {
-        bool.set(false);
       }
-    });
-
-    Rx.task(() -> {
-      System.out.println("Bool is " + bool.val());
     });
 
     Scanner input = new Scanner(System.in);

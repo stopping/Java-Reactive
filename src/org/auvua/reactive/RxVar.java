@@ -1,6 +1,6 @@
 package org.auvua.reactive;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.function.Supplier;
 
 public class RxVar<E> implements ReactiveVariable<E> {
@@ -23,7 +23,11 @@ public class RxVar<E> implements ReactiveVariable<E> {
 
   @Override
   public void update() {
-    setNoSync(function.get());
+    synchronized(this) {
+      setNoSync(function.get());
+      finishUpdate();
+      this.notifyAll();
+    }
   }
 
   /**
@@ -35,9 +39,10 @@ public class RxVar<E> implements ReactiveVariable<E> {
    */
   @Override
   public E val() {
-    if(Rx.isDetectingGetDependencies()) {
+    if(Rx.isDetectingGets()) {
       Rx.addThreadLocalGetDependency(this);
     }
+    awaitUpdate();
     return var.val();
   }
 
@@ -49,6 +54,7 @@ public class RxVar<E> implements ReactiveVariable<E> {
    * @return the value of the object held within this variable
    */
   public E peek() {
+    awaitUpdate();
     return var.val();
   }
 
@@ -64,9 +70,9 @@ public class RxVar<E> implements ReactiveVariable<E> {
     dependency.clear();
     this.function = function;
 
-    Rx.startDetectingGetDependencies();
+    Rx.startDetectingGets();
     update();
-    Rx.stopDetectingGetDependencies();
+    Rx.stopDetectingGets();
 
     for(ReactiveDependency dep : Rx.getThreadLocalGetDependenciesAndClear()) {
       dependency.add(dep);
@@ -75,24 +81,29 @@ public class RxVar<E> implements ReactiveVariable<E> {
 
   public void setNoSync(E value) {
     var.set(value);
-    synchronized(this) {
-      notifyAll();
-    }
   }
 
   @Override
   public void set(E value) {
-    if(Rx.isDetectingSetDependencies()) {
+    if(Rx.isDetectingSets()) {
       Rx.addThreadLocalSetDependency(this);
+      setNoSync(value);
+    } else if(Rx.isDetectingGets()) {
       setNoSync(value);
     } else {
       Rx.doSync(() -> { this.set(value); });
     }
   }
 
-  public void await(E value) {
+  /**
+   * A simple synchronization barrier for threads awaiting updates on this
+   * object. Threads will wait until this object receives an update before
+   * proceeding.
+   */
+  @Override
+  public void awaitUpdate() {
     synchronized(this) {
-      while(val() != value) {
+      while(isUpdating()) {
         try {
           this.wait();
         } catch (InterruptedException e) {
@@ -102,29 +113,35 @@ public class RxVar<E> implements ReactiveVariable<E> {
     }
   }
 
-  /**
-   * A simple synchronization barrier for threads awaiting updates on this
-   * object. Threads will wait until this object receives an update before
-   * proceeding.
-   */
-  public void awaitUpdate() {
-    synchronized(this) {
-      try {
-        this.wait();
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-  }
-
   @Override
-  public List<ReactiveDependency> getParents() {
+  public Collection<ReactiveDependency> getParents() {
     return dependency.getParents();
   }
 
   @Override
-  public List<ReactiveDependency> getChildren() {
+  public Collection<ReactiveDependency> getChildren() {
     return dependency.getChildren();
+  }
+
+  @Override
+  public Runnable getUpdateRunner() {
+    return dependency.getUpdateRunner();
+  }
+
+  @Override
+  public void prepareUpdate() {
+    awaitUpdate();
+    dependency.prepareUpdate();
+  }
+
+  @Override
+  public void finishUpdate() {
+    dependency.finishUpdate();
+  }
+
+  @Override
+  public boolean isUpdating() {
+    return dependency.isUpdating();
   }
 
 }

@@ -6,12 +6,12 @@ public class Timer implements Variable<Double> {
   double startTime;
 
   public Timer() {
-    startTime = System.currentTimeMillis() / 1000.0;
+    startTime = System.nanoTime() / 1000000000.0;
   }
 
   @Override
   public Double val() {
-    return System.currentTimeMillis() / 1000.0 - startTime;
+    return System.nanoTime() / 1000000000.0 - startTime;
   }
 
   @Override

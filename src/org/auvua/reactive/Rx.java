@@ -5,6 +5,8 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
 public class Rx {
@@ -13,6 +15,8 @@ public class Rx {
 
   private static Set<Thread> threadsDetectingGetDependencies = new HashSet<Thread>();
   private static Set<Thread> threadsDetectingSetDependencies = new HashSet<Thread>();
+  
+  private static ExecutorService executor;
 
   public static <E> RxVar<E> var(E value) {
     return new RxVar<E>(value);
@@ -25,6 +29,10 @@ public class Rx {
   public static RxTask task(Runnable runnable) {
     return new RxTask(runnable);
   }
+  
+  public static void initialize(int threads) {
+    executor = Executors.newFixedThreadPool(threads);
+  }
 
   /**
    * Performs a runnable operation, treating all RxVar.set() operations as occurring simultaneously,
@@ -32,9 +40,9 @@ public class Rx {
    * @param runnable the activity to run
    */
   public static void doSync(Runnable runnable) {
-    startDetectingSetDependencies();
+    startDetectingSets();
     runnable.run();
-    stopDetectingSetDependencies();
+    stopDetectingSets();
 
     Set<ReactiveDependency> currentDependees = getThreadLocalSetDependenciesAndClear();
     if(currentDependees == null) {
@@ -59,30 +67,42 @@ public class Rx {
       currentDependents = temp;
       currentDependents.clear();
     }
-
+    
     // Update all dependencies, which are now sorted topographically
-    for(ReactiveDependency dep : dependencyQueue) {
-      dep.update();
+    if(executor != null) {
+      for(ReactiveDependency dep : dependencyQueue) {
+        dep.prepareUpdate();
+      }
+      for(ReactiveDependency dep : dependencyQueue) {
+        executor.execute(dep.getUpdateRunner());
+      }
+      for(ReactiveDependency dep : dependencyQueue) {
+        dep.awaitUpdate();
+      }
+    } else {
+      for(ReactiveDependency dep : dependencyQueue) {
+        dep.update();
+      }
     }
   }
 
-  public static void startDetectingGetDependencies() {
+  public static void startDetectingGets() {
     Thread currThread = Thread.currentThread();
     threadsDetectingGetDependencies.add(currThread);
     threadToGetDependenciesMap.put(currThread, new HashSet<ReactiveDependency>());
   }
 
-  public static void startDetectingSetDependencies() {
+  public static void startDetectingSets() {
     Thread currThread = Thread.currentThread();
     threadsDetectingSetDependencies.add(currThread);
     threadToSetDependenciesMap.put(currThread, new HashSet<ReactiveDependency>());
   }
 
-  public static void stopDetectingGetDependencies() {
+  public static void stopDetectingGets() {
     threadsDetectingGetDependencies.remove(Thread.currentThread());
   }
 
-  public static void stopDetectingSetDependencies() {
+  public static void stopDetectingSets() {
     threadsDetectingSetDependencies.remove(Thread.currentThread());
   }
 
@@ -94,11 +114,11 @@ public class Rx {
     threadToSetDependenciesMap.get(Thread.currentThread()).add(dep);
   }
 
-  public static boolean isDetectingGetDependencies() {
+  public static boolean isDetectingGets() {
     return threadsDetectingGetDependencies.contains(Thread.currentThread());
   }
 
-  public static boolean isDetectingSetDependencies() {
+  public static boolean isDetectingSets() {
     return threadsDetectingSetDependencies.contains(Thread.currentThread());
   }
 
