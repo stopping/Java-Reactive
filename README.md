@@ -65,9 +65,9 @@ Performing the same task with the traditional observer pattern is certainly more
 Occasionally, one might wish to set several variable values before propogating the changes upstream:
 
 ```java
-RxVar<Boolean> a = Rx.var(0.0);
-RxVar<Boolean> b = Rx.var(0.0);
-RxVar<Boolean> c = Rx.var(0.0);
+RxVar<Double> a = Rx.var(0.0);
+RxVar<Double> b = Rx.var(0.0);
+RxVar<Double> c = Rx.var(0.0);
 RxVar<Double> sum = Rx.var(() -> {
   // You can do some useful work in here too, beyond just recalculating the value
   double s = a.val() + b.val() + c.val();
