@@ -1,30 +1,39 @@
 package org.auvua.reactive;
 
-import java.util.Collection;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class RxVar<E> implements ReactiveVariable<E> {
+public class RxVar<E> extends StandardDependency implements ReactiveVariable<E> {
 
-  private Supplier<E> function;
-  private StandardDependency dependency = new StandardDependency(this);
+  private Supplier<E> supplier;
   private Var<E> var = new Var<E>();
 
   public RxVar() {
+    if(Rx.isDetectingNewDependencies()) {
+      Rx.addNewDependency(this);
+    }
     var.set(null);
   }
 
   public RxVar(E value) {
+    if(Rx.isDetectingNewDependencies()) {
+      Rx.addNewDependency(this);
+    }
     var.set(value);
   }
 
-  public RxVar(Supplier<E> function) {
-    setFunction(function);
+  public RxVar(Supplier<E> supplier) {
+    if(Rx.isDetectingNewDependencies()) {
+      Rx.addNewDependency(this);
+    }
+    setSupplier(supplier);
   }
 
   @Override
   public void update() {
     synchronized(this) {
-      setNoSync(function.get());
+      setNoSync(supplier.get());
       finishUpdate();
       this.notifyAll();
     }
@@ -38,12 +47,12 @@ public class RxVar<E> implements ReactiveVariable<E> {
    * @return the value of the object held within this variable
    */
   @Override
-  public E val() {
+  public E get() {
     if(Rx.isDetectingGets()) {
       Rx.addThreadLocalGetDependency(this);
     }
     awaitUpdate();
-    return var.val();
+    return var.get();
   }
 
   /**
@@ -55,7 +64,7 @@ public class RxVar<E> implements ReactiveVariable<E> {
    */
   public E peek() {
     awaitUpdate();
-    return var.val();
+    return var.get();
   }
 
   /**
@@ -64,19 +73,27 @@ public class RxVar<E> implements ReactiveVariable<E> {
    * are updated. Executes the supplier function once in order to automatically
    * detect dependencies and calculate the initial value of this variable.
    * 
-   * @param function the supplier function for this variable.
+   * @param supplier the supplier function for this variable.
    */
-  public void setFunction(Supplier<E> function) {
-    dependency.clear();
-    this.function = function;
-
+  public void setSupplier(Supplier<E> supplier) {
+    this.clear();
+    this.supplier = supplier;
+    Set<ReactiveDependency> previousDependencies = Rx.getGetDependenciesAndClear();
+    
     Rx.startDetectingGets();
     update();
     Rx.stopDetectingGets();
 
-    for(ReactiveDependency dep : Rx.getThreadLocalGetDependenciesAndClear()) {
-      dependency.add(dep);
+    for(ReactiveDependency dep : Rx.getGetDependenciesAndClear()) {
+      this.add(dep);
     }
+    for(ReactiveDependency dep : previousDependencies) {
+      Rx.addThreadLocalGetDependency(dep);
+    }
+  }
+  
+  public Supplier<E> getSupplier() {
+    return supplier;
   }
 
   public void setNoSync(E value) {
@@ -93,6 +110,19 @@ public class RxVar<E> implements ReactiveVariable<E> {
     } else {
       Rx.doSync(() -> { this.set(value); });
     }
+  }
+  
+  /**
+   * Perform an operation on the value of this variable and propagate updates
+   * upstream. Typically used if the value stored by this variable is an object
+   * which needs to be interacted with without necessarily re-assigning a new
+   * object to this reactive variable.
+   * 
+   * @param consumer - The consumer function to apply
+   */
+  public void mod(Consumer<E> consumer) {
+    consumer.accept(get());
+    set(get());
   }
 
   /**
@@ -111,37 +141,6 @@ public class RxVar<E> implements ReactiveVariable<E> {
         }
       }
     }
-  }
-
-  @Override
-  public Collection<ReactiveDependency> getParents() {
-    return dependency.getParents();
-  }
-
-  @Override
-  public Collection<ReactiveDependency> getChildren() {
-    return dependency.getChildren();
-  }
-
-  @Override
-  public Runnable getUpdateRunner() {
-    return dependency.getUpdateRunner();
-  }
-
-  @Override
-  public void prepareUpdate() {
-    awaitUpdate();
-    dependency.prepareUpdate();
-  }
-
-  @Override
-  public void finishUpdate() {
-    dependency.finishUpdate();
-  }
-
-  @Override
-  public boolean isUpdating() {
-    return dependency.isUpdating();
   }
 
 }

@@ -11,4 +11,6 @@ public interface ReactiveDependency extends Reactive {
    * @return The list of downward dependencies (i.e. dependencies which this one uses directly)
    */
   public Collection<ReactiveDependency> getChildren();
+  
+  public void clear();
 }

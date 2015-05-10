@@ -23,7 +23,7 @@ public class RxThreadTest {
       for (int i = 0; i < count; i++) {
         a *= 1 + 1.0 / count;
       }
-      return var1.val() + var2.val() + var3.val() + var4.val() + var5.val() + var6.val() + var7.val() + var8.val() + a;
+      return var1.get() + var2.get() + var3.get() + var4.get() + var5.get() + var6.get() + var7.get() + var8.get() + a;
     });
     
     RxVar<Double> dep2 = Rx.var(() -> {
@@ -31,7 +31,7 @@ public class RxThreadTest {
       for (int i = 0; i < count; i++) {
         a *= 1 + 1.0 / count;
       }
-      return var1.val() + var2.val() + var3.val() + var4.val() + var5.val() + var6.val() + var7.val() + var8.val() - a;
+      return var1.get() + var2.get() + var3.get() + var4.get() + var5.get() + var6.get() + var7.get() + var8.get() - a;
     });
     
     RxVar<Double> dep3 = Rx.var(() -> {
@@ -39,7 +39,7 @@ public class RxThreadTest {
       for (int i = 0; i < count; i++) {
         a *= 1 + 1.0 / count;
       }
-      return var1.val() + var2.val() + var3.val() + var4.val() + var5.val() + var6.val() + var7.val() + var8.val() * a;
+      return var1.get() + var2.get() + var3.get() + var4.get() + var5.get() + var6.get() + var7.get() + var8.get() * a;
     });
     
     RxVar<Double> dep4 = Rx.var(() -> {
@@ -47,7 +47,7 @@ public class RxThreadTest {
       for (int i = 0; i < count; i++) {
         a *= 1 + 1.0 / count;
       }
-      return var1.val() + var2.val() + var3.val() + var4.val() + var5.val() + var6.val() + var7.val() + var8.val() / a;
+      return var1.get() + var2.get() + var3.get() + var4.get() + var5.get() + var6.get() + var7.get() + var8.get() / a;
     });
     
     RxVar<Double> dep5 = Rx.var(() -> {
@@ -55,7 +55,7 @@ public class RxThreadTest {
       for (int i = 0; i < count; i++) {
         a *= 1 + 1.0 / count;
       }
-      return var1.val() + var2.val() + var3.val() + var4.val() + var5.val() + var6.val() + var7.val() + var8.val() + a;
+      return var1.get() + var2.get() + var3.get() + var4.get() + var5.get() + var6.get() + var7.get() + var8.get() + a;
     });
     
     RxVar<Double> dep6 = Rx.var(() -> {
@@ -63,7 +63,7 @@ public class RxThreadTest {
       for (int i = 0; i < count; i++) {
         a *= 1 + 1.0 / count;
       }
-      return var1.val() + var2.val() + var3.val() + var4.val() + var5.val() + var6.val() + var7.val() + var8.val() - a;
+      return var1.get() + var2.get() + var3.get() + var4.get() + var5.get() + var6.get() + var7.get() + var8.get() - a;
     });
     
     RxVar<Double> dep7 = Rx.var(() -> {
@@ -71,7 +71,7 @@ public class RxThreadTest {
       for (int i = 0; i < count; i++) {
         a *= 1 + 1.0 / count;
       }
-      return var1.val() + var2.val() + var3.val() + var4.val() + var5.val() + var6.val() + var7.val() + var8.val() * a;
+      return var1.get() + var2.get() + var3.get() + var4.get() + var5.get() + var6.get() + var7.get() + var8.get() * a;
     });
     
     RxVar<Double> dep8 = Rx.var(() -> {
@@ -79,18 +79,18 @@ public class RxThreadTest {
       for (int i = 0; i < count; i++) {
         a *= 1 + 1.0 / count;
       }
-      return var1.val() + var2.val() + var3.val() + var4.val() + var5.val() + var6.val() + var7.val() + var8.val() / a;
+      return var1.get() + var2.get() + var3.get() + var4.get() + var5.get() + var6.get() + var7.get() + var8.get() / a;
     });
 
     Rx.task(() -> {
-      dep1.val();
-      dep2.val();
-      dep3.val();
-      dep4.val();
-      dep5.val();
-      dep6.val();
-      dep7.val();
-      dep8.val();
+      System.out.println(dep1.get());
+      System.out.println(dep2.get());
+      System.out.println(dep3.get());
+      System.out.println(dep4.get());
+      System.out.println(dep5.get());
+      System.out.println(dep6.get());
+      System.out.println(dep7.get());
+      System.out.println(dep8.get());
     });
 
     Scanner input = new Scanner(System.in);
@@ -117,8 +117,8 @@ public class RxThreadTest {
   }
   
   private static Double increment(Var<Double> var) {
-    var.set(var.val() + 1);
-    return var.val();
+    var.set(var.get() + 1);
+    return var.get();
   }
 
 }

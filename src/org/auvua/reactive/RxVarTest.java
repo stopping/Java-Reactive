@@ -10,15 +10,15 @@ public class RxVarTest {
     RxVar<Double> var3 = Rx.var(0.0);
 
     RxVar<Double> sum = Rx.var(() -> {
-      return var1.val() + var2.val() + var3.val();
+      return var1.get() + var2.get() + var3.get();
     });
 
     Rx.task(() -> {
-      System.out.println("The sum: " + sum.val());
+      System.out.println("The sum: " + sum.get());
     });
 
     Rx.task(() -> {
-      if(sum.val() > 5.0) {
+      if(sum.get() > 5.0) {
         System.out.println("The sum of these numbers is greater than 5!");
       }
     });

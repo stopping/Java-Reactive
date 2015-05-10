@@ -1,24 +1,30 @@
 package org.auvua.reactive;
 
-import java.util.Collection;
+import java.util.Set;
 
-public class RxTask implements ReactiveDependency, Runnable {
+public class RxTask extends StandardDependency implements ReactiveDependency, Runnable {
 
-  private StandardDependency dependency = new StandardDependency(this);
   private Runnable runnable;
 
-  public RxTask() {}
-
   public RxTask(Runnable runnable) {
-    dependency.clear();
+    this.clear();
     this.runnable = runnable;
+    
+    if(Rx.isDetectingNewDependencies()) {
+      Rx.addNewDependency(this);
+    }
+    
+    Set<ReactiveDependency> previousDependencies = Rx.getGetDependenciesAndClear();
 
     Rx.startDetectingGets();
     update();
     Rx.stopDetectingGets();
 
-    for(ReactiveDependency dep : Rx.getThreadLocalGetDependenciesAndClear()) {
-      dependency.add(dep);
+    for(ReactiveDependency dep : Rx.getGetDependenciesAndClear()) {
+      this.add(dep);
+    }
+    for(ReactiveDependency dep : previousDependencies) {
+      Rx.addThreadLocalGetDependency(dep);
     }
   }
 
@@ -32,38 +38,8 @@ public class RxTask implements ReactiveDependency, Runnable {
   }
 
   @Override
-  public Collection<ReactiveDependency> getParents() {
-    return dependency.getParents();
-  }
-
-  @Override
-  public Collection<ReactiveDependency> getChildren() {
-    return dependency.getChildren();
-  }
-
-  @Override
   public void run() {
     Rx.doSync(this.runnable);
-  }
-
-  @Override
-  public Runnable getUpdateRunner() {
-    return dependency.getUpdateRunner();
-  }
-  
-  @Override
-  public void prepareUpdate() {
-    dependency.prepareUpdate();
-  }
-
-  @Override
-  public void finishUpdate() {
-    dependency.finishUpdate();
-  }
-
-  @Override
-  public boolean isUpdating() {
-    return dependency.isUpdating();
   }
 
   @Override

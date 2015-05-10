@@ -1,6 +1,7 @@
 package org.auvua.reactive;
 
-public interface Variable<E> {
-  public E val();
+import java.util.function.Supplier;
+
+public interface Variable<E> extends Supplier<E> {
   public void set(E value);
 }

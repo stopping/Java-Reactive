@@ -1,17 +1,17 @@
-package org.auvua.reactive;
+package org.auvua.agent.control;
 
 import java.util.function.Supplier;
 
 public class MovingAverageSimple implements Supplier<Double>  {
   
-  private Variable<Double> var;
+  private Supplier<Double> var;
   
   private int index = 0;
   private int saveNum;
   private double[] lastValues;
   private double average = 0;
   
-  public MovingAverageSimple(Variable<Double> var, int saveNum) {
+  public MovingAverageSimple(Supplier<Double> var, int saveNum) {
     this.var = var;
     this.saveNum = saveNum;
     this.lastValues = new double[saveNum];
@@ -19,7 +19,7 @@ public class MovingAverageSimple implements Supplier<Double>  {
 
   @Override
   public Double get() {
-    double value = var.val();
+    double value = var.get();
     average += (value - lastValues[index]) / saveNum;
     lastValues[index] = value;
     index++;

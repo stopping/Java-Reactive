@@ -9,12 +9,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
+import org.auvua.reactive.RxTaskBuilder.RxTaskTrigger;
+
 public class Rx {
   private static Map<Thread,Set<ReactiveDependency>> threadToGetDependenciesMap = new ConcurrentHashMap<Thread,Set<ReactiveDependency>>();
   private static Map<Thread,Set<ReactiveDependency>> threadToSetDependenciesMap = new ConcurrentHashMap<Thread,Set<ReactiveDependency>>();
+  private static Map<Thread,Set<ReactiveDependency>> threadToNewDependenciesMap = new ConcurrentHashMap<Thread,Set<ReactiveDependency>>();
 
-  private static Set<Thread> threadsDetectingGetDependencies = new HashSet<Thread>();
-  private static Set<Thread> threadsDetectingSetDependencies = new HashSet<Thread>();
+  private static Set<Thread> threadsDetectingGets = new HashSet<Thread>();
+  private static Set<Thread> threadsDetectingSets = new HashSet<Thread>();
+  private static Set<Thread> threadsDetectingNewDeps = new HashSet<Thread>();
   
   private static ExecutorService executor;
 
@@ -30,8 +34,28 @@ public class Rx {
     return new RxTask(runnable);
   }
   
+  public static RxCondition cond(Supplier<Boolean> function) {
+    return new RxCondition(function);
+  }
+  
+  public static RxCondition cond(boolean b) {
+    return new RxCondition(b);
+  }
+  
+  public static <E> RxValve<E> valve(E value) {
+    return new RxValve<E>(value);
+  }
+
+  public static <E> RxValve<E> valve(Supplier<E> function) {
+    return new RxValve<E>(function);
+  }
+  
   public static void initialize(int threads) {
     executor = Executors.newFixedThreadPool(threads);
+  }
+  
+  public static RxTaskTrigger when(RxCondition c) {
+    return new RxTaskBuilder().when(c);
   }
 
   /**
@@ -44,10 +68,7 @@ public class Rx {
     runnable.run();
     stopDetectingSets();
 
-    Set<ReactiveDependency> currentDependees = getThreadLocalSetDependenciesAndClear();
-    if(currentDependees == null) {
-      System.out.println("currentDependees null in " + Thread.currentThread());
-    }
+    Set<ReactiveDependency> currentDependees = getSetDependenciesAndClear();
     Set<ReactiveDependency> currentDependents = new HashSet<ReactiveDependency>();
     Set<ReactiveDependency> dependencyQueue = new LinkedHashSet<ReactiveDependency>();
     Set<ReactiveDependency> temp;
@@ -68,6 +89,7 @@ public class Rx {
       currentDependents.clear();
     }
     
+    // System.out.println(dependencyQueue.size());
     // Update all dependencies, which are now sorted topographically
     if(executor != null) {
       for(ReactiveDependency dep : dependencyQueue) {
@@ -88,22 +110,32 @@ public class Rx {
 
   public static void startDetectingGets() {
     Thread currThread = Thread.currentThread();
-    threadsDetectingGetDependencies.add(currThread);
+    threadsDetectingGets.add(currThread);
     threadToGetDependenciesMap.put(currThread, new HashSet<ReactiveDependency>());
   }
 
   public static void startDetectingSets() {
     Thread currThread = Thread.currentThread();
-    threadsDetectingSetDependencies.add(currThread);
+    threadsDetectingSets.add(currThread);
     threadToSetDependenciesMap.put(currThread, new HashSet<ReactiveDependency>());
+  }
+  
+  public static void startDetectingNewDependencies() {
+    Thread currThread = Thread.currentThread();
+    threadsDetectingNewDeps.add(currThread);
+    threadToNewDependenciesMap.put(currThread, new HashSet<ReactiveDependency>());
   }
 
   public static void stopDetectingGets() {
-    threadsDetectingGetDependencies.remove(Thread.currentThread());
+    threadsDetectingGets.remove(Thread.currentThread());
   }
 
   public static void stopDetectingSets() {
-    threadsDetectingSetDependencies.remove(Thread.currentThread());
+    threadsDetectingSets.remove(Thread.currentThread());
+  }
+  
+  public static void stopDetectingNewDependencies() {
+    threadsDetectingNewDeps.remove(Thread.currentThread());
   }
 
   public static void addThreadLocalGetDependency(ReactiveDependency dep) {
@@ -113,24 +145,41 @@ public class Rx {
   public static void addThreadLocalSetDependency(ReactiveDependency dep) {
     threadToSetDependenciesMap.get(Thread.currentThread()).add(dep);
   }
+  
+  public static void addNewDependency(ReactiveDependency dep) {
+    threadToNewDependenciesMap.get(Thread.currentThread()).add(dep);
+  }
 
   public static boolean isDetectingGets() {
-    return threadsDetectingGetDependencies.contains(Thread.currentThread());
+    return threadsDetectingGets.contains(Thread.currentThread());
   }
 
   public static boolean isDetectingSets() {
-    return threadsDetectingSetDependencies.contains(Thread.currentThread());
+    return threadsDetectingSets.contains(Thread.currentThread());
+  }
+  
+  public static boolean isDetectingNewDependencies() {
+    return threadsDetectingNewDeps.contains(Thread.currentThread());
   }
 
-  public static Set<ReactiveDependency> getThreadLocalGetDependenciesAndClear() {
+  public static Set<ReactiveDependency> getGetDependenciesAndClear() {
     Set<ReactiveDependency> threadLocalDependees = threadToGetDependenciesMap.get(Thread.currentThread());
     threadToGetDependenciesMap.put(Thread.currentThread(), new HashSet<ReactiveDependency>());
+    if(threadLocalDependees == null) threadLocalDependees = new HashSet<ReactiveDependency>();
     return threadLocalDependees;
   }
 
-  public static Set<ReactiveDependency> getThreadLocalSetDependenciesAndClear() {
+  public static Set<ReactiveDependency> getSetDependenciesAndClear() {
     Set<ReactiveDependency> threadLocalDependees = threadToSetDependenciesMap.get(Thread.currentThread());
     threadToSetDependenciesMap.put(Thread.currentThread(), new HashSet<ReactiveDependency>());
+    if(threadLocalDependees == null) threadLocalDependees = new HashSet<ReactiveDependency>();
+    return threadLocalDependees;
+  }
+  
+  public static Set<ReactiveDependency> getNewDependenciesAndClear() {
+    Set<ReactiveDependency> threadLocalDependees = threadToNewDependenciesMap.get(Thread.currentThread());
+    threadToNewDependenciesMap.put(Thread.currentThread(), new HashSet<ReactiveDependency>());
+    if(threadLocalDependees == null) threadLocalDependees = new HashSet<ReactiveDependency>();
     return threadLocalDependees;
   }
 

@@ -13,7 +13,7 @@ public class Var<E> implements Variable<E> {
   }
 
   @Override
-  public E val() {
+  public E get() {
     return value;
   }
 

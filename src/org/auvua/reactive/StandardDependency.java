@@ -6,22 +6,16 @@ import java.util.HashSet;
 /**
  * @author sean
  *
+ * A standard implementation of a reactive dependency object which delegates
+ * update behavior to the dependency that it wraps.
  */
-public class StandardDependency implements ReactiveDependency {
+public abstract class StandardDependency implements ReactiveDependency {
 
   private Collection<ReactiveDependency> parents = new HashSet<ReactiveDependency>();
   private Collection<ReactiveDependency> children = new HashSet<ReactiveDependency>();
 
-  private ReactiveDependency updateableDependency;
   private Runnable updateRunner;
   private boolean updating = false;
-
-  public StandardDependency(ReactiveDependency dep) {
-    updateableDependency = dep;
-    updateRunner = () -> {
-      update();
-    };
-  }
 
   @Override
   public Collection<ReactiveDependency> getParents() {
@@ -46,17 +40,13 @@ public class StandardDependency implements ReactiveDependency {
       dep.getParents().remove(this);
     }
   }
-
+  
+  @Override
   public void clear() {
     for(ReactiveDependency dep : children) {
       dep.getParents().remove(this);
     }
     children.clear();
-  }
-
-  @Override
-  public void update() {
-    updateableDependency.update();
   }
 
   @Override
@@ -77,11 +67,6 @@ public class StandardDependency implements ReactiveDependency {
   @Override
   public boolean isUpdating() {
     return updating;
-  }
-
-  @Override
-  public void awaitUpdate() {
-    updateableDependency.awaitUpdate();
   }
 
 }

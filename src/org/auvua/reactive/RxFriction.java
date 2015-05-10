@@ -13,6 +13,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.auvua.agent.control.Integrator;
+import org.auvua.agent.control.Timer;
+
 public class RxFriction {
 
   public static void main( String[] args ) {
@@ -43,34 +46,31 @@ public class RxFriction {
 
     });
 
-    Variable<Double> time = new Timer();
+    RxVar<Double> time = Timer.getInstance();
     RxVar<Double> force = Rx.var(0.0);
     RxVar<Double> omega = Rx.var(0.0);
     RxVar<Double> theta = Rx.var(new Integrator(omega, time));
-
-    RxVar<Double> xVel = Rx.var(0.0);
-    RxVar<Double> yVel = Rx.var(0.0);
+    
+    RxVar<Double> xVelPrev = Rx.var(0.0);
+    RxVar<Double> yVelPrev = Rx.var(0.0);
 
     double cd = 1.0;
 
-    Integrator xAccelIntegrator = new Integrator(Rx.var(() -> {
-      double xV = xVel.peek();
-      return force.val() * Math.cos(theta.val()) - xV * cd;
+    RxVar<Double> xVel = new Integrator(Rx.var(() -> {
+      double xV = xVelPrev.peek();
+      return force.get() * Math.cos(theta.get()) - xV * cd;
     }), time);
 
-    Integrator yAccelIntegrator = new Integrator(Rx.var(() -> {
-      double yV = yVel.peek();
-      return force.val() * Math.sin(theta.val()) - yV * cd;
+    RxVar<Double> yVel = new Integrator(Rx.var(() -> {
+      double yV = yVelPrev.peek();
+      return force.get() * Math.sin(theta.get()) - yV * cd;
     }), time);
+    
+    xVelPrev.setSupplier(xVel);
+    yVelPrev.setSupplier(yVel);
 
-    xVel.setFunction(xAccelIntegrator);
-    yVel.setFunction(yAccelIntegrator);
-
-    Integrator xVelIntegrator = new Integrator(xVel, time, 100);
-    Integrator yVelIntegrator = new Integrator(yVel, time, 100);
-
-    RxVar<Double> xPos = Rx.var(xVelIntegrator);
-    RxVar<Double> yPos = Rx.var(yVelIntegrator);
+    RxVar<Double> xPos = new Integrator(xVel, time, 100);
+    RxVar<Double> yPos = new Integrator(yVel, time, 100);
 
     Container pane = frame.getContentPane();
 
@@ -86,23 +86,15 @@ public class RxFriction {
     // Now let's set up 
 
     Rx.task(() -> {
-      double x = xPos.val();
-      if(x <= 0.0) {
-        xAccelIntegrator.setIntegral(Math.abs(xVel.peek()));
-      }
-      if(x >= pane.getSize().width - 20) {
-        xAccelIntegrator.setIntegral(-Math.abs(xVel.peek()));
-      }
+      double x = xPos.get();
+      if(x <= 0.0 || x >= pane.getSize().width - 20)
+        xVel.setNoSync(-xVel.peek());
     });
 
     Rx.task(() -> {
-      double y = yPos.val();
-      if(y <= 0.0) {
-        yAccelIntegrator.setIntegral(Math.abs(yVel.peek()));
-      }
-      if(y >= pane.getSize().height - 20) {
-        yAccelIntegrator.setIntegral(-Math.abs(yVel.peek()));
-      }
+      double y = yPos.get();
+      if(y <= 0.0 || y >= pane.getSize().height - 20)
+        yVel.setNoSync(-yVel.peek());
     });
 
     frame.add(new JPanel() {
@@ -111,11 +103,11 @@ public class RxFriction {
       protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         //g.clearRect(0, 0, 10000, 10000);
-        int x = xPos.val().intValue();
-        int y = yPos.val().intValue();
+        int x = xPos.get().intValue();
+        int y = yPos.get().intValue();
         g.drawOval(x, y, 20, 20);
-        int x2 = (int) (x + 10 * Math.cos(theta.val()));
-        int y2 = (int) (y + 10 * Math.sin(theta.val()));
+        int x2 = (int) (x + 10 * Math.cos(theta.get()));
+        int y2 = (int) (y + 10 * Math.sin(theta.get()));
         g.setColor(Color.RED);
         g.drawLine(x + 10, y + 10, x2 + 10, y2 + 10);
         g.setColor(Color.BLACK);
@@ -131,6 +123,7 @@ public class RxFriction {
       Rx.doSync(() -> {
         force.set(1000 * (w - s));
         omega.set(5 * (d - a));
+        Timer.getInstance().trigger();
       });
 
       frame.repaint();
