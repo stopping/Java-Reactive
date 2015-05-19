@@ -1,7 +1,10 @@
 package org.auvua.reactive.core;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -68,29 +71,65 @@ public class Rx {
     runnable.run();
     stopDetectingSets();
 
-    Set<ReactiveDependency> currentDependees = getSetDependenciesAndClear();
-    Set<ReactiveDependency> currentDependents = new HashSet<ReactiveDependency>();
-    Set<ReactiveDependency> dependencyQueue = new LinkedHashSet<ReactiveDependency>();
-    Set<ReactiveDependency> temp;
-
-    while(!currentDependees.isEmpty()) {
-      for(ReactiveDependency dependee : currentDependees) {
-        for(ReactiveDependency dependent : dependee.getParents()) {
-          currentDependents.add(dependent);
-          // Force the dependency to come after its child it in the processing queue
-          dependencyQueue.remove(dependent);
-          dependencyQueue.add(dependent);
+    // First get all affected dependencies in the graph
+    Set<ReactiveDependency> affectedDependencies = getSetDependenciesAndClear();
+    Set<ReactiveDependency> temp = new LinkedHashSet<ReactiveDependency>();
+    temp.addAll(affectedDependencies);
+    while (!temp.isEmpty()) {
+      Set<ReactiveDependency> nextTemp = new LinkedHashSet<ReactiveDependency>();
+      for (ReactiveDependency dep : temp) {
+        for (ReactiveDependency parent : dep.getParents()) {
+          if (!affectedDependencies.contains(parent)) {
+            nextTemp.add(parent);
+          }
         }
       }
-      // Use parents as children for next iteration
-      temp = currentDependees;
-      currentDependees = currentDependents;
-      currentDependents = temp;
-      currentDependents.clear();
+      affectedDependencies.addAll(nextTemp);
+      temp = nextTemp;
     }
     
-//     System.out.println(dependencyQueue.size());
-    // Update all dependencies, which are now sorted topographically
+    // Topologically sort all reactive dependencies
+    List<ReactiveDependency> noChildren = new LinkedList<ReactiveDependency>();
+    Map<ReactiveDependency, Integer> depToNumChildren = new HashMap<ReactiveDependency, Integer>();
+    for (ReactiveDependency dep : affectedDependencies) {
+      int numUpdatedChildren = 0;
+      for (ReactiveDependency child : dep.getChildren()) {
+        if (affectedDependencies.contains(child)) {
+          numUpdatedChildren++;
+        }
+      }
+      if (numUpdatedChildren == 0) {
+        noChildren.add(dep);
+      } else {
+        depToNumChildren.put(dep, numUpdatedChildren);
+      }
+    }
+    
+    Set<ReactiveDependency> dependencyQueue = new LinkedHashSet<ReactiveDependency>();
+    while (!noChildren.isEmpty()) {
+      List<ReactiveDependency> nextNoChildren = new LinkedList<ReactiveDependency>();
+      for (ReactiveDependency dep : noChildren) {
+        for (ReactiveDependency parent : dep.getParents()) {
+          if (depToNumChildren.containsKey(parent)) {
+            int numChildrenForParent = depToNumChildren.get(parent);
+            if (numChildrenForParent - 1 == 0) {
+              depToNumChildren.remove(parent);
+              nextNoChildren.add(parent);
+            } else {
+              depToNumChildren.put(parent, numChildrenForParent - 1);
+            }
+          }
+        }
+      }
+      dependencyQueue.addAll(nextNoChildren);
+      noChildren = nextNoChildren;
+    }
+    
+    if (depToNumChildren.size() != 0) {
+      throw new IllegalStateException("Circular reactive dependency detected.");
+    }
+    
+    //System.out.println(dependencyQueue.size());
     if(executor != null) {
       for(ReactiveDependency dep : dependencyQueue) {
         dep.prepareUpdate();
