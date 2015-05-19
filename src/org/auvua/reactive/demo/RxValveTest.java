@@ -1,4 +1,7 @@
-package org.auvua.reactive;
+package org.auvua.reactive.demo;
+
+import org.auvua.reactive.core.Rx;
+import org.auvua.reactive.core.RxValve;
 
 public class RxValveTest {
   public static void main (String[] args) {

@@ -3,7 +3,7 @@ package org.auvua.agent.simulator;
 import java.util.Random;
 
 import org.auvua.agent.control.Timer;
-import org.auvua.reactive.RxVar;
+import org.auvua.reactive.core.RxVar;
 
 public class Sensor extends RxVar<Double> {
   

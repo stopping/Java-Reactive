@@ -1,8 +1,6 @@
-package org.auvua.reactive;
+package org.auvua.reactive.core;
 
 import java.util.function.Supplier;
-
-import org.auvua.reactive.Rx;
 
 public class RxTaskBuilder {
   

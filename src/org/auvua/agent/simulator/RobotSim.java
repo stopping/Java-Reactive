@@ -14,7 +14,7 @@ import org.auvua.agent.tasks.MissionFactory;
 import org.auvua.agent.tasks.MissionFactory.MissionType;
 import org.auvua.agent.tasks.Task;
 import org.auvua.model.RobotModel;
-import org.auvua.reactive.Rx;
+import org.auvua.reactive.core.Rx;
 
 public class RobotSim {
   

@@ -1,9 +1,9 @@
 package org.auvua.agent;
 import org.auvua.agent.control.Integrator;
 import org.auvua.agent.control.Timer;
-import org.auvua.reactive.Rx;
-import org.auvua.reactive.RxVar;
-import org.auvua.reactive.Variable;
+import org.auvua.reactive.core.Rx;
+import org.auvua.reactive.core.RxVar;
+import org.auvua.reactive.core.Variable;
 
 public class KinematicsLinear {
   

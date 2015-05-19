@@ -1,4 +1,4 @@
-package org.auvua.reactive;
+package org.auvua.reactive.core;
 
 public interface Reactive {
   public void update();

@@ -1,4 +1,4 @@
-package org.auvua.reactive;
+package org.auvua.reactive.core;
 
 import java.util.Collection;
 import java.util.HashSet;

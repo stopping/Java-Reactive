@@ -8,11 +8,13 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.auvua.agent.tasks.GoToArea;
+import org.auvua.agent.control.StoppingDistance;
+import org.auvua.agent.tasks.GoToArea2;
 import org.auvua.agent.tasks.MissionFactory;
 import org.auvua.agent.tasks.MissionFactory.MissionType;
 import org.auvua.agent.tasks.Task;
 import org.auvua.model.RobotModel2;
+import org.auvua.reactive.core.RxVar;
 
 public class RobotSim2 {
   
@@ -30,7 +32,7 @@ public class RobotSim2 {
       frame.repaint();
       
       try {
-        Thread.sleep(10);
+        Thread.sleep(1);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
@@ -51,6 +53,9 @@ public class RobotSim2 {
 
     frame.setSize(new Dimension(800,600));
     frame.setVisible(true);
+    
+    RxVar<Double> stopPosX = new StoppingDistance(robot.motion.x.vel, robot.motion.x.accel, 100);
+    RxVar<Double> stopPosY = new StoppingDistance(robot.motion.y.vel, robot.motion.y.accel, 100);
 
     frame.add(new JPanel() {
       private static final long serialVersionUID = -3805700651446212348L;
@@ -59,8 +64,12 @@ public class RobotSim2 {
         super.paintComponent(g);
         int x = robot.motion.x.pos.get().intValue() + 400;
         int y = robot.motion.y.pos.get().intValue() + 300;
-        int xTarget = ((GoToArea) command).target.x.get().intValue() + 400;
-        int yTarget = ((GoToArea) command).target.y.get().intValue() + 300;
+        int xTarget = ((GoToArea2) command).target.x.get().intValue() + 400;
+        int yTarget = ((GoToArea2) command).target.y.get().intValue() + 300;
+        
+        int stopX = stopPosX.get().intValue() + x;
+        int stopY = stopPosY.get().intValue() + y;
+        
         g.drawOval(x - 10, y - 10, 20, 20);
         
         int x2 = (int) (x + robot.thrust.x.get());
@@ -69,6 +78,7 @@ public class RobotSim2 {
         g.drawLine(x, y, x2, y2);
         g.setColor(Color.BLUE);
         g.drawOval(xTarget - 5, yTarget - 5, 10, 10);
+        g.drawOval(stopX - 5, stopY - 5, 10, 10);
         g.setColor(Color.BLACK);
       }
     });

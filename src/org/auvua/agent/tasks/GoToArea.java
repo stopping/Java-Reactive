@@ -3,7 +3,7 @@ package org.auvua.agent.tasks;
 import org.auvua.agent.TwoVector;
 import org.auvua.agent.control.PidController;
 import org.auvua.model.RobotModel2;
-import org.auvua.reactive.Rx;
+import org.auvua.reactive.core.Rx;
 
 public class GoToArea extends AbstractTask {
   
@@ -26,13 +26,13 @@ public class GoToArea extends AbstractTask {
     this.position = new TwoVector(robot.motion.x.pos, robot.motion.y.pos);
     
     initializeCondition("success", new OccupyingArea(position, target, radius));
-    initializeCondition("timeout", new Timeout(10.0));
+    initializeCondition("timeout", new Timeout(60.0));
     
     Rx.when(getCondition("success"))
       .then(() -> System.out.println("Made it to coordinate " + target.x.get() + " " + target.y.get()));
     
-    PidController xControl = new PidController(robot.positionSensor.x, target.x, 1, .1, 2.5);
-    PidController yControl = new PidController(robot.positionSensor.y, target.y, 1, .1, 2.5);
+    PidController xControl = new PidController(robot.positionSensor.x, target.x, .25, 0, 0);
+    PidController yControl = new PidController(robot.positionSensor.y, target.y, .25, 0, 0);
     
     xControl.setSaturationLimits(-100, 100);
     yControl.setSaturationLimits(-100, 100);

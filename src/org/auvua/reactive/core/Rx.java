@@ -1,4 +1,4 @@
-package org.auvua.reactive;
+package org.auvua.reactive.core;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -9,7 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
-import org.auvua.reactive.RxTaskBuilder.RxTaskTrigger;
+import org.auvua.reactive.core.RxTaskBuilder.RxTaskTrigger;
 
 public class Rx {
   private static Map<Thread,Set<ReactiveDependency>> threadToGetDependenciesMap = new ConcurrentHashMap<Thread,Set<ReactiveDependency>>();
@@ -89,7 +89,7 @@ public class Rx {
       currentDependents.clear();
     }
     
-    // System.out.println(dependencyQueue.size());
+//     System.out.println(dependencyQueue.size());
     // Update all dependencies, which are now sorted topographically
     if(executor != null) {
       for(ReactiveDependency dep : dependencyQueue) {

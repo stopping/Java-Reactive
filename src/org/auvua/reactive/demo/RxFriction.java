@@ -1,4 +1,4 @@
-package org.auvua.reactive;
+package org.auvua.reactive.demo;
 
 import java.awt.Color;
 import java.awt.Container;
@@ -15,6 +15,8 @@ import javax.swing.JPanel;
 
 import org.auvua.agent.control.Integrator;
 import org.auvua.agent.control.Timer;
+import org.auvua.reactive.core.Rx;
+import org.auvua.reactive.core.RxVar;
 
 public class RxFriction {
 

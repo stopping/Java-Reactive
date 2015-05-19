@@ -1,4 +1,4 @@
-package org.auvua.reactive;
+package org.auvua.reactive.demo;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -14,10 +14,16 @@ import javax.swing.JPanel;
 import org.auvua.agent.TwoVector;
 import org.auvua.agent.control.Delayer;
 import org.auvua.agent.control.Differentiator;
+import org.auvua.agent.control.FirstOrderSystem;
+import org.auvua.agent.control.Integrator;
+import org.auvua.agent.control.SecondOrderSystem;
+import org.auvua.agent.control.TimeInvariantSystem;
 import org.auvua.agent.control.Timer;
 import org.auvua.agent.simulator.Sensor;
+import org.auvua.reactive.core.Rx;
+import org.auvua.reactive.core.RxVar;
 
-public class FirstOrderSimulator {
+public class SystemSimulator {
   
   static double prevTime;
   static double prevValue;
@@ -25,17 +31,12 @@ public class FirstOrderSimulator {
 
   public static void main( String[] args ) {
     
-    RxVar<Double> mousePosX = Rx.var(0.0);
-    RxVar<Double> mousePosY = Rx.var(0.0);
+    RxVar<Double> value = Rx.var(0.0);
+    TimeInvariantSystem sensor = new TimeInvariantSystem(value);
+    sensor.addPole(-20, 0);
     
-    RxVar<Double> mouseVelX = Rx.var(new Differentiator(mousePosX, Timer.getInstance()));
-    RxVar<Double> mouseVelY = Rx.var(new Differentiator(mousePosY, Timer.getInstance()));
-    
-    RxVar<Double> value = new TwoVector(mouseVelX, mouseVelY).r;
-    RxVar<Double> preSine = new Delayer(new Sensor(value), .5);
-    RxVar<Double> sensor = Rx.var(() -> {
-      return Math.sin(Timer.getInstance().get() * 6.28 * 60) * 100 + preSine.get();
-    });
+//    sensor.addZero(-.2, 10);
+//    sensor.scale(1.0 / (.04 + 100));
 
     JFrame frame = new JFrame();
 
@@ -57,7 +58,7 @@ public class FirstOrderSimulator {
     });
     
     Rx.task(() -> {
-      double f = .05;
+      double f = 100;
       
       double t = Timer.getInstance().get();
       double v = value.get();
@@ -65,11 +66,11 @@ public class FirstOrderSimulator {
       
       int timeInt = (int) (t * 100) % 800;
       int valueInt = (int) (-v * f) + 300;
-      int sensorInt = (int) (-s * f) + 500;
+      int sensorInt = (int) (-s * f) + 300;
       
       int prevTimeInt = (int) (prevTime * 100) % 800;
       int prevValueInt = (int) (-prevValue * f) + 300;
-      int prevSensorInt = (int) (-prevSensor * f) + 500;
+      int prevSensorInt = (int) (-prevSensor * f) + 300;
       
       Graphics g = image.getGraphics();
       if (timeInt >= prevTimeInt) { 
@@ -77,8 +78,6 @@ public class FirstOrderSimulator {
         g.drawLine(prevTimeInt, prevValueInt, timeInt, valueInt);
         g.setColor(Color.RED);
         g.drawLine(prevTimeInt, prevSensorInt, timeInt, sensorInt);
-//        g.setColor(new Color(0, 0, 0, 5));
-//        g.fillRect(0, 0, 1000, 1000);
       } else {
         g.clearRect(0, 0, 1000, 1000);
       }
@@ -100,16 +99,12 @@ public class FirstOrderSimulator {
     }).start();
 
     while(true) {
-      Point mousePos = MouseInfo.getPointerInfo().getLocation();
       Rx.doSync(() -> {
-        mousePosX.set(mousePos.x + 0.0);
-        mousePosY.set(mousePos.y + 0.0);
         Timer.getInstance().trigger();
       });
       frame.repaint();
-      //System.out.println(Timer.getInstance().get());
       try {
-        Thread.sleep(5);
+        Thread.sleep(1);
       } catch (InterruptedException e) {
         // TODO Auto-generated catch block
         e.printStackTrace();

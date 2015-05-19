@@ -2,7 +2,7 @@ package org.auvua.agent.tasks;
 
 import org.auvua.agent.TwoVector;
 import org.auvua.agent.control.Timer;
-import org.auvua.reactive.RxCondition;
+import org.auvua.reactive.core.RxCondition;
 
 public class OccupyingArea extends RxCondition {
   private boolean inAreaPrev;
@@ -24,7 +24,7 @@ public class OccupyingArea extends RxCondition {
         t = time - entranceTime;
       }
       inAreaPrev = inArea;
-      return t > 1.0;
+      return t > 3.0;
     });
   }
   

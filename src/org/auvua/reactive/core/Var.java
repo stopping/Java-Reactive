@@ -1,4 +1,4 @@
-package org.auvua.reactive;
+package org.auvua.reactive.core;
 
 public class Var<E> implements Variable<E> {
 

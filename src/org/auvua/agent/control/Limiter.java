@@ -4,7 +4,7 @@ package org.auvua.agent.control;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.auvua.reactive.RxVar;
+import org.auvua.reactive.core.RxVar;
 
 public class Limiter extends RxVar<Double> {
   

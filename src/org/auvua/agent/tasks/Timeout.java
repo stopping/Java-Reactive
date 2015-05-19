@@ -1,7 +1,7 @@
 package org.auvua.agent.tasks;
 
 import org.auvua.agent.control.Timer;
-import org.auvua.reactive.RxCondition;
+import org.auvua.reactive.core.RxCondition;
 
 public class Timeout extends RxCondition {
 

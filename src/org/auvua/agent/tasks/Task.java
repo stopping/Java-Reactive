@@ -3,7 +3,7 @@ package org.auvua.agent.tasks;
 import java.util.Map;
 
 import org.auvua.model.Component;
-import org.auvua.reactive.RxCondition;
+import org.auvua.reactive.core.RxCondition;
 
 public interface Task extends Component {
   public void start();

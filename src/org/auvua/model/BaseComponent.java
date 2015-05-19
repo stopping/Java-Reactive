@@ -3,7 +3,7 @@ package org.auvua.model;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.auvua.reactive.Variable;
+import org.auvua.reactive.core.Variable;
 
 public class BaseComponent implements Component {
   

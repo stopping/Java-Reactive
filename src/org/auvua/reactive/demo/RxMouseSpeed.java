@@ -1,4 +1,4 @@
-package org.auvua.reactive;
+package org.auvua.reactive.demo;
 
 import java.awt.Container;
 import java.awt.Dimension;
@@ -16,6 +16,9 @@ import javax.sound.sampled.SourceDataLine;
 import org.auvua.agent.control.Differentiator;
 import org.auvua.agent.control.MovingAverageExponential;
 import org.auvua.agent.control.Timer;
+import org.auvua.reactive.core.Rx;
+import org.auvua.reactive.core.RxTask;
+import org.auvua.reactive.core.RxVar;
 
 public class RxMouseSpeed {
 

@@ -1,5 +1,5 @@
 package org.auvua.agent.control;
-import org.auvua.reactive.RxVar;
+import org.auvua.reactive.core.RxVar;
 
 public class RateLimiter extends RxVar<Double> {
   

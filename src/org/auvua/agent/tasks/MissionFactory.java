@@ -2,7 +2,7 @@ package org.auvua.agent.tasks;
 
 import org.auvua.agent.TwoVector;
 import org.auvua.model.RobotModel2;
-import org.auvua.reactive.Rx;
+import org.auvua.reactive.core.Rx;
 
 public class MissionFactory {
   
@@ -11,7 +11,7 @@ public class MissionFactory {
   public Task build(MissionType type) {
     switch(type) {
       case RANDOM_WALK:
-        GoToArea task = new GoToArea(robot, new TwoVector(Rx.var(Math.random() * 400 - 200), Rx.var(Math.random() * 400 - 200)), 10);
+        GoToArea2 task = new GoToArea2(robot, new TwoVector(Rx.var(Math.random() * 400 - 200), Rx.var(Math.random() * 400 - 200)), 10);
         Task doNothing = new DoNothing(robot);
         
         Rx.when(task.getCondition("timeout"))
@@ -22,10 +22,8 @@ public class MissionFactory {
         
         Rx.when(task.getCondition("success"))
           .then(() -> {
-            task.stop();
             task.target.x.set(Math.random() * 400 - 200);
             task.target.y.set(Math.random() * 400 - 200);
-            task.start();
           });
         
         return task;

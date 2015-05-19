@@ -6,9 +6,9 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import org.auvua.model.BaseComponent;
-import org.auvua.reactive.ReactiveDependency;
-import org.auvua.reactive.Rx;
-import org.auvua.reactive.RxCondition;
+import org.auvua.reactive.core.ReactiveDependency;
+import org.auvua.reactive.core.Rx;
+import org.auvua.reactive.core.RxCondition;
 
 public abstract class AbstractTask extends BaseComponent implements Task {
   

@@ -3,7 +3,7 @@ package org.auvua.agent.control;
 import java.util.function.Supplier;
 
 import org.auvua.agent.control.Timer;
-import org.auvua.reactive.RxVar;
+import org.auvua.reactive.core.RxVar;
 
 public class SecondOrderSystem extends RxVar<Double> {
   

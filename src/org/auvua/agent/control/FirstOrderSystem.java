@@ -1,7 +1,7 @@
 package org.auvua.agent.control;
 
 import org.auvua.agent.control.Timer;
-import org.auvua.reactive.RxVar;
+import org.auvua.reactive.core.RxVar;
 
 public class FirstOrderSystem extends RxVar<Double> {
   

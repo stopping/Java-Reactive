@@ -5,7 +5,7 @@ import org.auvua.agent.control.Integrator;
 import org.auvua.agent.control.Limiter;
 import org.auvua.agent.control.Timer;
 import org.auvua.agent.simulator.Sensor;
-import org.auvua.reactive.Rx;
+import org.auvua.reactive.core.Rx;
 
 public class RobotModel {
   

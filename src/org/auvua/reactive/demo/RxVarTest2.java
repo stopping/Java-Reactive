@@ -1,7 +1,10 @@
-package org.auvua.reactive;
+package org.auvua.reactive.demo;
 
 import java.util.ArrayList;
 import java.util.Scanner;
+
+import org.auvua.reactive.core.Rx;
+import org.auvua.reactive.core.RxVar;
 
 public class RxVarTest2 {
 
