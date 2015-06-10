@@ -16,7 +16,7 @@ import org.auvua.agent.control.Delayer;
 import org.auvua.agent.control.Differentiator;
 import org.auvua.agent.control.Timer;
 import org.auvua.agent.simulator.Sensor;
-import org.auvua.reactive.core.Rx;
+import org.auvua.reactive.core.R;
 import org.auvua.reactive.core.RxVar;
 
 public class FirstOrderSimulator {
@@ -27,15 +27,15 @@ public class FirstOrderSimulator {
 
   public static void main( String[] args ) {
     
-    RxVar<Double> mousePosX = Rx.var(0.0);
-    RxVar<Double> mousePosY = Rx.var(0.0);
+    RxVar<Double> mousePosX = R.var(0.0);
+    RxVar<Double> mousePosY = R.var(0.0);
     
-    RxVar<Double> mouseVelX = Rx.var(new Differentiator(mousePosX, Timer.getInstance()));
-    RxVar<Double> mouseVelY = Rx.var(new Differentiator(mousePosY, Timer.getInstance()));
+    RxVar<Double> mouseVelX = R.var(new Differentiator(mousePosX, Timer.getInstance()));
+    RxVar<Double> mouseVelY = R.var(new Differentiator(mousePosY, Timer.getInstance()));
     
     RxVar<Double> value = new TwoVector(mouseVelX, mouseVelY).r;
     RxVar<Double> preSine = new Delayer(new Sensor(value), .5);
-    RxVar<Double> sensor = Rx.var(() -> {
+    RxVar<Double> sensor = R.var(() -> {
       return Math.sin(Timer.getInstance().get() * 6.28 * 60) * 100 + preSine.get();
     });
 
@@ -58,7 +58,7 @@ public class FirstOrderSimulator {
       }
     });
     
-    Rx.task(() -> {
+    R.task(() -> {
       double f = .05;
       
       double t = Timer.getInstance().get();
@@ -94,7 +94,7 @@ public class FirstOrderSimulator {
       Scanner input = new Scanner(System.in);
       while(true) {
         double d = input.nextDouble();
-        Rx.doSync(() -> {
+        R.doSync(() -> {
           value.set(d);
           Timer.getInstance().trigger();
         });
@@ -103,7 +103,7 @@ public class FirstOrderSimulator {
 
     while(true) {
       Point mousePos = MouseInfo.getPointerInfo().getLocation();
-      Rx.doSync(() -> {
+      R.doSync(() -> {
         mousePosX.set(mousePos.x + 0.0);
         mousePosY.set(mousePos.y + 0.0);
         Timer.getInstance().trigger();

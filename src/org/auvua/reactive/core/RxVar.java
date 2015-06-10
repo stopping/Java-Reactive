@@ -1,6 +1,5 @@
 package org.auvua.reactive.core;
 
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -10,22 +9,22 @@ public class RxVar<E> extends StandardDependency implements ReactiveVariable<E> 
   private Var<E> var = new Var<E>();
 
   public RxVar() {
-    if(Rx.isDetectingNewDependencies()) {
-      Rx.addNewDependency(this);
-    }
+    if(R.isDetectingNewDependencies()) {
+      R.addNewDependency(this);
+    } 
     var.set(null);
   }
 
   public RxVar(E value) {
-    if(Rx.isDetectingNewDependencies()) {
-      Rx.addNewDependency(this);
+    if(R.isDetectingNewDependencies()) {
+      R.addNewDependency(this);
     }
     var.set(value);
   }
 
   public RxVar(Supplier<E> supplier) {
-    if(Rx.isDetectingNewDependencies()) {
-      Rx.addNewDependency(this);
+    if(R.isDetectingNewDependencies()) {
+      R.addNewDependency(this);
     }
     setSupplier(supplier);
   }
@@ -48,8 +47,8 @@ public class RxVar<E> extends StandardDependency implements ReactiveVariable<E> 
    */
   @Override
   public E get() {
-    if(Rx.isDetectingGets()) {
-      Rx.addThreadLocalGetDependency(this);
+    if(R.isDetectingGets()) {
+      R.addThreadLocalGetDependency(this);
     }
     awaitUpdate();
     return var.get();
@@ -78,18 +77,8 @@ public class RxVar<E> extends StandardDependency implements ReactiveVariable<E> 
   public void setSupplier(Supplier<E> supplier) {
     this.clear();
     this.supplier = supplier;
-    Set<ReactiveDependency> previousDependencies = Rx.getGetDependenciesAndClear();
     
-    Rx.startDetectingGets();
-    update();
-    Rx.stopDetectingGets();
-
-    for(ReactiveDependency dep : Rx.getGetDependenciesAndClear()) {
-      this.add(dep);
-    }
-    for(ReactiveDependency dep : previousDependencies) {
-      Rx.addThreadLocalGetDependency(dep);
-    }
+    determineDependencies();
   }
   
   public Supplier<E> getSupplier() {
@@ -102,13 +91,13 @@ public class RxVar<E> extends StandardDependency implements ReactiveVariable<E> 
 
   @Override
   public void set(E value) {
-    if(Rx.isDetectingSets()) {
-      Rx.addThreadLocalSetDependency(this);
+    if(R.isDetectingSets()) {
+      R.addThreadLocalSetDependency(this);
       setNoSync(value);
-    } else if(Rx.isDetectingGets()) {
+    } else if(R.isDetectingGets()) {
       setNoSync(value);
     } else {
-      Rx.doSync(() -> { this.set(value); });
+      R.doSync(() -> { this.set(value); });
     }
   }
   

@@ -3,15 +3,15 @@ package org.auvua.reactive.demo;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import org.auvua.reactive.core.Rx;
+import org.auvua.reactive.core.R;
 import org.auvua.reactive.core.RxVar;
 
 public class RxVarTest2 {
 
   public static void main(String[] args) {
-    RxVar<ArrayList<Double>> rxList = Rx.var(new ArrayList<Double>());
+    RxVar<ArrayList<Double>> rxList = R.var(new ArrayList<Double>());
     
-    Rx.task(() -> {
+    R.task(() -> {
       System.out.println(rxList.get().toString());
     });
     

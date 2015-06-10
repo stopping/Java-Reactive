@@ -3,7 +3,7 @@ package org.auvua.agent;
 import java.util.function.Supplier;
 
 import org.auvua.agent.tasks.Task;
-import org.auvua.reactive.core.Rx;
+import org.auvua.reactive.core.R;
 
 public class SequentialMissionBuilder {
   
@@ -19,7 +19,7 @@ public class SequentialMissionBuilder {
     }
     
     public MissionTrigger then(Runnable ... tasks) {
-      Rx.task(() -> {
+      R.task(() -> {
         if(predicate.get()) {
           for (Runnable task : tasks) {
             task.run();
@@ -30,7 +30,7 @@ public class SequentialMissionBuilder {
     }
     
     public MissionTrigger start(Task ... tasks) {
-      Rx.task(() -> {
+      R.task(() -> {
         if(predicate.get()) {
           for (Task task : tasks) {
             task.start();
@@ -41,7 +41,7 @@ public class SequentialMissionBuilder {
     }
     
     public MissionTrigger stop(Task ... tasks) {
-      Rx.task(() -> {
+      R.task(() -> {
         if(predicate.get()) {
           for (Task task : tasks) {
             task.stop();
@@ -52,7 +52,7 @@ public class SequentialMissionBuilder {
     }
     
     public MissionTrigger restart(Task ... tasks) {
-      Rx.task(() -> {
+      R.task(() -> {
         if(predicate.get()) {
           for (Task task : tasks) {
             task.stop();

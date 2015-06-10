@@ -11,7 +11,7 @@ import javax.swing.JPanel;
 import org.auvua.agent.control.Differentiator;
 import org.auvua.agent.control.StoppingDistanceCalculator;
 import org.auvua.agent.control.Timer;
-import org.auvua.reactive.core.Rx;
+import org.auvua.reactive.core.R;
 import org.auvua.reactive.core.RxVar;
 
 public class StoppingAnalysis {
@@ -29,7 +29,7 @@ public class StoppingAnalysis {
     
     StoppingDistanceCalculator d = new StoppingDistanceCalculator(v0, a0, jm);
     
-    RxVar<Double> value = Rx.var(() -> {
+    RxVar<Double> value = R.var(() -> {
       return d.getPosition(Timer.getInstance().get()) - d.finalPosition();
     });
     RxVar<Double> vel = new Differentiator(value);
@@ -55,7 +55,7 @@ public class StoppingAnalysis {
       }
     });
     
-    Rx.task(() -> {
+    R.task(() -> {
       double fx = 1;
       double fv = 1;
       double fa = 1;
@@ -94,7 +94,7 @@ public class StoppingAnalysis {
     });
 
     while(Timer.getInstance().get() < 10) {
-      Rx.doSync(() -> {
+      R.doSync(() -> {
         Timer.getInstance().trigger();
       });
       frame.repaint();

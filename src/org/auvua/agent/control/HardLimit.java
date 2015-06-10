@@ -8,7 +8,6 @@ public class HardLimit extends RxVar<Double> {
       double value = var.get();
       if(value < lowerLimit) value = lowerLimit;
       if(value > upperLimit) value = upperLimit;
-      var.setNoSync(value);
       return value;
     });
   }

@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 
 import org.auvua.model.BaseComponent;
 import org.auvua.reactive.core.ReactiveDependency;
-import org.auvua.reactive.core.Rx;
+import org.auvua.reactive.core.R;
 import org.auvua.reactive.core.RxCondition;
 
 public abstract class AbstractTask extends BaseComponent implements Task {
@@ -19,10 +19,10 @@ public abstract class AbstractTask extends BaseComponent implements Task {
   public abstract void initialize();
   
   public void start() {
-    Rx.startDetectingNewDependencies();
+    R.startDetectingNewDependencies();
     initialize();
-    Rx.stopDetectingNewDependencies();
-    newReactiveDependencies = Rx.getNewDependenciesAndClear();
+    R.stopDetectingNewDependencies();
+    newReactiveDependencies = R.getNewDependenciesAndClear();
   }
   
   public void stop() {
@@ -36,7 +36,7 @@ public abstract class AbstractTask extends BaseComponent implements Task {
   }
   
   public void declareCondition(String name) {
-    setCondition(name, Rx.cond(false));
+    setCondition(name, R.cond(false));
   }
   
   public void initializeCondition(String name, Supplier<Boolean> supplier) {

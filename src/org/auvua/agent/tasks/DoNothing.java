@@ -1,13 +1,13 @@
 package org.auvua.agent.tasks;
 
 import org.auvua.agent.control.OpenLoopController;
-import org.auvua.model.RobotModel2;
+import org.auvua.model.RobotModel;
 
 public class DoNothing extends AbstractTask {
   
-  private RobotModel2 robot;
+  private RobotModel robot;
 
-  public DoNothing(RobotModel2 robot) {
+  public DoNothing(RobotModel robot) {
     this.robot = robot;
   }
   @Override

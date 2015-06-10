@@ -2,6 +2,7 @@ package org.auvua.reactive.core;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author sean
@@ -14,8 +15,10 @@ public abstract class StandardDependency implements ReactiveDependency {
   private Collection<ReactiveDependency> parents = new HashSet<ReactiveDependency>();
   private Collection<ReactiveDependency> children = new HashSet<ReactiveDependency>();
 
-  private Runnable updateRunner;
+  private Runnable updateRunner = () -> update();
   private boolean updating = false;
+  private int dependencyRank = 0;
+  private boolean marked = false;
 
   @Override
   public Collection<ReactiveDependency> getParents() {
@@ -39,6 +42,51 @@ public abstract class StandardDependency implements ReactiveDependency {
       this.children.remove(dep);
       dep.getParents().remove(this);
     }
+  }
+  
+  public void determineDependencies() {
+    if(R.isDetectingNewDependencies()) {
+      R.addNewDependency(this);
+    }
+    
+    Set<ReactiveDependency> previousDependencies = R.getGetDependenciesAndClear();
+
+    R.startDetectingGets();
+    update();
+    R.stopDetectingGets();
+
+    for(ReactiveDependency dep : R.getGetDependenciesAndClear()) {
+      this.add(dep);
+    }
+    
+    calculateDependencyRank();
+    
+    for(ReactiveDependency dep : previousDependencies) {
+      R.addThreadLocalGetDependency(dep);
+    }
+  }
+  
+  public void calculateDependencyRank() {
+    if (marked) {
+      throw new IllegalStateException("Circular reactive dependency detected.");
+    }
+    
+    int tempRank = 0;
+    for (ReactiveDependency dep : children) {
+      int r = dep.getDependencyRank() + 1;
+      tempRank = r > tempRank ? r : tempRank;
+    }
+    dependencyRank = tempRank;
+    
+    marked = true;
+    for (ReactiveDependency dep : parents) {
+      dep.calculateDependencyRank();
+    }
+    marked = false;
+  }
+  
+  public int getDependencyRank() {
+    return dependencyRank;
   }
   
   @Override

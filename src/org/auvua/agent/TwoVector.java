@@ -1,5 +1,5 @@
 package org.auvua.agent;
-import org.auvua.reactive.core.Rx;
+import org.auvua.reactive.core.R;
 import org.auvua.reactive.core.RxVar;
 
 public class TwoVector {
@@ -12,11 +12,11 @@ public class TwoVector {
   public TwoVector(RxVar<Double> x, RxVar<Double> y) {
     this.x = x;
     this.y = y;
-    this.r = Rx.var(() -> Math.hypot(x.get(), y.get()));
-    this.theta = Rx.var(() -> Math.atan(y.get() / x.get()));
+    this.r = R.var(() -> Math.hypot(x.get(), y.get()));
+    this.theta = R.var(() -> Math.atan(y.get() / x.get()));
   }
   
   public TwoVector() {
-    this(Rx.var(0.0), Rx.var(0.0));
+    this(R.var(0.0), R.var(0.0));
   }
 }

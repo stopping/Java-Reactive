@@ -13,18 +13,22 @@ public class RateLimiter extends RxVar<Double> {
     
     this.setSupplier(() -> {
       double time = timer.get();
-      double deltaT = time - lastTime;
       double val = var.get();
-      double rate = (val - lastVal) / deltaT;
-      if (rate > rateLimit) {
-        lastVal += deltaT * rateLimit;
-      } else if (rate < -rateLimit) {
-        lastVal += deltaT * -rateLimit;
+      if (time != lastTime) {
+        double deltaT = time - lastTime;
+        double rate = (val - lastVal) / deltaT;
+        if (rate > rateLimit) {
+          lastVal += deltaT * rateLimit;
+        } else if (rate < -rateLimit) {
+          lastVal += deltaT * -rateLimit;
+        } else {
+          lastVal = val;
+        }
       } else {
+        //System.out.println("Undefined rate");
         lastVal = val;
       }
       lastTime = time;
-      var.setNoSync(lastVal);
       return lastVal;
     });
   }

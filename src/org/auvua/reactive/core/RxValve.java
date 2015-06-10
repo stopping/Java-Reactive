@@ -7,19 +7,19 @@ public class RxValve<E> extends RxVar<E> implements Triggerable {
   private RxVar<E> var;
   
   public RxValve(E value) {
-    var = Rx.var(value);
-    set(var.get());
+    var = R.var(value);
+    setThis(var.get());
   }
   
   public RxValve(Supplier<E> supplier) {
-    var = Rx.var(supplier);
-    set(var.get());
+    var = R.var(supplier);
+    setThis(var.get());
   }
   
   @Override
   public void setSupplier(Supplier<E> supplier) {
     var.setSupplier(supplier);
-    set(var.get());
+    setThis(var.get());
   }
   
   @Override
@@ -29,7 +29,23 @@ public class RxValve<E> extends RxVar<E> implements Triggerable {
 
   @Override
   public void trigger() {
-    set(var.get());
+    setThis(var.get());
+  }
+  
+  public void setThis(E value) {
+    if(R.isDetectingSets()) {
+      R.addThreadLocalSetDependency(this);
+      setNoSync(value);
+    } else if(R.isDetectingGets()) {
+      setNoSync(value);
+    } else {
+      R.doSync(() -> { this.setThis(value); });
+    }
+  }
+  
+  @Override
+  public void set(E value) {
+    var.set(value);
   }
   
 }

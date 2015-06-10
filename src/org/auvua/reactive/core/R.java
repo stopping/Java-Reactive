@@ -1,5 +1,8 @@
 package org.auvua.reactive.core;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -14,14 +17,19 @@ import java.util.function.Supplier;
 
 import org.auvua.reactive.core.RxTaskBuilder.RxTaskTrigger;
 
-public class Rx {
-  private static Map<Thread,Set<ReactiveDependency>> threadToGetDependenciesMap = new ConcurrentHashMap<Thread,Set<ReactiveDependency>>();
-  private static Map<Thread,Set<ReactiveDependency>> threadToSetDependenciesMap = new ConcurrentHashMap<Thread,Set<ReactiveDependency>>();
-  private static Map<Thread,Set<ReactiveDependency>> threadToNewDependenciesMap = new ConcurrentHashMap<Thread,Set<ReactiveDependency>>();
+public class R {
+  private static Map<Thread, Set<ReactiveDependency>> threadToGetDependenciesMap
+    = new ConcurrentHashMap<Thread, Set<ReactiveDependency>>();
+  private static Map<Thread, Set<ReactiveDependency>> threadToSetDependenciesMap
+    = new ConcurrentHashMap<Thread, Set<ReactiveDependency>>();
+  private static Map<Thread, Set<ReactiveDependency>> threadToNewDependenciesMap
+    = new ConcurrentHashMap<Thread, Set<ReactiveDependency>>();
 
   private static Set<Thread> threadsDetectingGets = new HashSet<Thread>();
   private static Set<Thread> threadsDetectingSets = new HashSet<Thread>();
   private static Set<Thread> threadsDetectingNewDeps = new HashSet<Thread>();
+  
+  private static Map<ReactiveDependency, Integer> dependencyRanks = new HashMap<ReactiveDependency, Integer>();
   
   private static ExecutorService executor;
 
@@ -72,9 +80,9 @@ public class Rx {
     stopDetectingSets();
 
     // First get all affected dependencies in the graph
-    Set<ReactiveDependency> affectedDependencies = getSetDependenciesAndClear();
+    Set<ReactiveDependency> affectedDependencies = new LinkedHashSet<ReactiveDependency>();
     Set<ReactiveDependency> temp = new LinkedHashSet<ReactiveDependency>();
-    temp.addAll(affectedDependencies);
+    temp.addAll(getSetDependenciesAndClear());
     while (!temp.isEmpty()) {
       Set<ReactiveDependency> nextTemp = new LinkedHashSet<ReactiveDependency>();
       for (ReactiveDependency dep : temp) {
@@ -88,46 +96,11 @@ public class Rx {
       temp = nextTemp;
     }
     
-    // Topologically sort all reactive dependencies
-    List<ReactiveDependency> noChildren = new LinkedList<ReactiveDependency>();
-    Map<ReactiveDependency, Integer> depToNumChildren = new HashMap<ReactiveDependency, Integer>();
-    for (ReactiveDependency dep : affectedDependencies) {
-      int numUpdatedChildren = 0;
-      for (ReactiveDependency child : dep.getChildren()) {
-        if (affectedDependencies.contains(child)) {
-          numUpdatedChildren++;
-        }
-      }
-      if (numUpdatedChildren == 0) {
-        noChildren.add(dep);
-      } else {
-        depToNumChildren.put(dep, numUpdatedChildren);
-      }
-    }
-    
-    Set<ReactiveDependency> dependencyQueue = new LinkedHashSet<ReactiveDependency>();
-    while (!noChildren.isEmpty()) {
-      List<ReactiveDependency> nextNoChildren = new LinkedList<ReactiveDependency>();
-      for (ReactiveDependency dep : noChildren) {
-        for (ReactiveDependency parent : dep.getParents()) {
-          if (depToNumChildren.containsKey(parent)) {
-            int numChildrenForParent = depToNumChildren.get(parent);
-            if (numChildrenForParent - 1 == 0) {
-              depToNumChildren.remove(parent);
-              nextNoChildren.add(parent);
-            } else {
-              depToNumChildren.put(parent, numChildrenForParent - 1);
-            }
-          }
-        }
-      }
-      dependencyQueue.addAll(nextNoChildren);
-      noChildren = nextNoChildren;
-    }
-    
-    if (depToNumChildren.size() != 0) {
-      throw new IllegalStateException("Circular reactive dependency detected.");
-    }
+    // Then sort them by their topological ranking
+    List<ReactiveDependency> dependencyQueue = new ArrayList<ReactiveDependency>(affectedDependencies);
+    Collections.sort(dependencyQueue, (arg0, arg1) -> {
+      return arg0.getDependencyRank() - arg1.getDependencyRank();
+    });
     
     //System.out.println(dependencyQueue.size());
     if(executor != null) {

@@ -16,7 +16,7 @@ public class RxTaskBuilder {
     }
     
     public RxTaskTrigger then(Runnable ... tasks) {
-      Rx.task(() -> {
+      R.task(() -> {
         if(predicate.get()) {
           for (Runnable task : tasks) {
             task.run();

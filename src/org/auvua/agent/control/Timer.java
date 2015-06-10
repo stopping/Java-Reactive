@@ -5,7 +5,9 @@ import org.auvua.reactive.core.RxVar;
 
 public class Timer extends RxVar<Double> {
 
-  private double startTime;
+  private double prevTimeReal;
+  private double prevTimeAdjusted;
+  private double factor = 1.0;
   private static Timer instance;
   
   public static Timer getInstance() {
@@ -16,12 +18,21 @@ public class Timer extends RxVar<Double> {
   }
 
   private Timer() {
-    startTime = System.nanoTime() / 1000000000.0;
-    setNoSync(0.0);
+    prevTimeReal = System.nanoTime() / 1000000000.0;
+    prevTimeAdjusted = 0.0;
+    setNoSync(prevTimeAdjusted);
   }
 
   public void trigger() {
-    set(System.nanoTime() / 1000000000.0 - startTime);
+    double currTimeReal = System.nanoTime() / 1000000000.0;
+    double diff = currTimeReal - prevTimeReal;
+    prevTimeAdjusted += diff * factor;
+    set(prevTimeAdjusted);
+    prevTimeReal = currTimeReal;
+  }
+  
+  public void scale(double factor) {
+    this.factor = factor;
   }
 
 }

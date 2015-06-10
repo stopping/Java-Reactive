@@ -3,26 +3,18 @@ package org.auvua.agent.simulator;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.MouseInfo;
-import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.util.Scanner;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import org.auvua.agent.TwoVector;
-import org.auvua.agent.control.Delayer;
 import org.auvua.agent.control.Differentiator;
-import org.auvua.agent.control.FirstOrderSystem;
 import org.auvua.agent.control.Integrator;
-import org.auvua.agent.control.Limiter;
-import org.auvua.agent.control.RateLimiter;
-import org.auvua.agent.control.SecondOrderSystem;
 import org.auvua.agent.control.TimeInvariantSystem;
 import org.auvua.agent.control.Timer;
-import org.auvua.model.RobotModel2;
-import org.auvua.reactive.core.Rx;
+import org.auvua.model.RobotModel;
+import org.auvua.reactive.core.R;
 import org.auvua.reactive.core.RxVar;
 
 public class RobotAnalysis {
@@ -34,13 +26,13 @@ public class RobotAnalysis {
 
   public static void main( String[] args ) {
     
-    RxVar<Double> setPoint = Rx.var(0.0);
-    RxVar<Double> output = new Integrator(RobotModel2.getInstance().velocitySensor.x);
-    RxVar<Double> diff = Rx.var(() -> setPoint.get() - output.get());
+    RxVar<Double> setPoint = R.var(0.0);
+    RxVar<Double> output = new Integrator(RobotModel.getInstance().velocitySensor.x);
+    RxVar<Double> diff = R.var(() -> setPoint.get() - output.get());
     TimeInvariantSystem controller = new TimeInvariantSystem(diff);
     controller.addPole(-20, 0);
     controller.scale(1);
-    RobotModel2.getInstance().thrustInput.x.setSupplier(() -> controller.get());
+    RobotModel.getInstance().thrustInput.x.setSupplier(() -> controller.get());
     
     RxVar<Double> outputDerivative = new Differentiator(output);
 
@@ -64,7 +56,7 @@ public class RobotAnalysis {
       }
     });
     
-    Rx.task(() -> {
+    R.task(() -> {
       double f = 1;
       
       double t = Timer.getInstance().get();
@@ -104,7 +96,7 @@ public class RobotAnalysis {
       Scanner in = new Scanner(System.in);
       while(true) {
         double d = in.nextDouble();
-        Rx.doSync(() -> {
+        R.doSync(() -> {
           setPoint.set(d);
           Timer.getInstance().trigger();
         });
@@ -112,9 +104,9 @@ public class RobotAnalysis {
     }).start();
 
     while(true) {
-      Rx.doSync(() -> {
+      R.doSync(() -> {
         Timer.getInstance().trigger();
-        RobotModel2.getInstance().trigger();
+        RobotModel.getInstance().trigger();
       });
       frame.repaint();
       try {

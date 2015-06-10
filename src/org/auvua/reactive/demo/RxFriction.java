@@ -15,7 +15,7 @@ import javax.swing.JPanel;
 
 import org.auvua.agent.control.Integrator;
 import org.auvua.agent.control.Timer;
-import org.auvua.reactive.core.Rx;
+import org.auvua.reactive.core.R;
 import org.auvua.reactive.core.RxVar;
 
 public class RxFriction {
@@ -49,21 +49,21 @@ public class RxFriction {
     });
 
     RxVar<Double> time = Timer.getInstance();
-    RxVar<Double> force = Rx.var(0.0);
-    RxVar<Double> omega = Rx.var(0.0);
-    RxVar<Double> theta = Rx.var(new Integrator(omega, time));
+    RxVar<Double> force = R.var(0.0);
+    RxVar<Double> omega = R.var(0.0);
+    RxVar<Double> theta = R.var(new Integrator(omega, time));
     
-    RxVar<Double> xVelPrev = Rx.var(0.0);
-    RxVar<Double> yVelPrev = Rx.var(0.0);
+    RxVar<Double> xVelPrev = R.var(0.0);
+    RxVar<Double> yVelPrev = R.var(0.0);
 
     double cd = 1.0;
 
-    RxVar<Double> xVel = new Integrator(Rx.var(() -> {
+    RxVar<Double> xVel = new Integrator(R.var(() -> {
       double xV = xVelPrev.peek();
       return force.get() * Math.cos(theta.get()) - xV * cd;
     }), time);
 
-    RxVar<Double> yVel = new Integrator(Rx.var(() -> {
+    RxVar<Double> yVel = new Integrator(R.var(() -> {
       double yV = yVelPrev.peek();
       return force.get() * Math.sin(theta.get()) - yV * cd;
     }), time);
@@ -87,13 +87,13 @@ public class RxFriction {
 
     // Now let's set up 
 
-    Rx.task(() -> {
+    R.task(() -> {
       double x = xPos.get();
       if(x <= 0.0 || x >= pane.getSize().width - 20)
         xVel.setNoSync(-xVel.peek());
     });
 
-    Rx.task(() -> {
+    R.task(() -> {
       double y = yPos.get();
       if(y <= 0.0 || y >= pane.getSize().height - 20)
         yVel.setNoSync(-yVel.peek());
@@ -122,7 +122,7 @@ public class RxFriction {
       double s = keyStates.get('s');
       double d = keyStates.get('d');
 
-      Rx.doSync(() -> {
+      R.doSync(() -> {
         force.set(1000 * (w - s));
         omega.set(5 * (d - a));
         Timer.getInstance().trigger();

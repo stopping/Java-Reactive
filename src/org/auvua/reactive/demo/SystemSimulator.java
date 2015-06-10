@@ -20,7 +20,7 @@ import org.auvua.agent.control.SecondOrderSystem;
 import org.auvua.agent.control.TimeInvariantSystem;
 import org.auvua.agent.control.Timer;
 import org.auvua.agent.simulator.Sensor;
-import org.auvua.reactive.core.Rx;
+import org.auvua.reactive.core.R;
 import org.auvua.reactive.core.RxVar;
 
 public class SystemSimulator {
@@ -31,7 +31,7 @@ public class SystemSimulator {
 
   public static void main( String[] args ) {
     
-    RxVar<Double> value = Rx.var(0.0);
+    RxVar<Double> value = R.var(0.0);
     TimeInvariantSystem sensor = new TimeInvariantSystem(value);
     sensor.addPole(-20, 0);
     
@@ -57,7 +57,7 @@ public class SystemSimulator {
       }
     });
     
-    Rx.task(() -> {
+    R.task(() -> {
       double f = 100;
       
       double t = Timer.getInstance().get();
@@ -91,7 +91,7 @@ public class SystemSimulator {
       Scanner input = new Scanner(System.in);
       while(true) {
         double d = input.nextDouble();
-        Rx.doSync(() -> {
+        R.doSync(() -> {
           value.set(d);
           Timer.getInstance().trigger();
         });
@@ -99,7 +99,7 @@ public class SystemSimulator {
     }).start();
 
     while(true) {
-      Rx.doSync(() -> {
+      R.doSync(() -> {
         Timer.getInstance().trigger();
       });
       frame.repaint();

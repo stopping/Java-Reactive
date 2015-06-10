@@ -1,19 +1,22 @@
 package org.auvua.agent.tasks;
 
 import org.auvua.agent.TwoVector;
+import org.auvua.agent.control.Integrator;
 import org.auvua.agent.control.PidController;
-import org.auvua.model.RobotModel2;
-import org.auvua.reactive.core.Rx;
+import org.auvua.agent.control.StoppingDistance;
+import org.auvua.model.RobotModel;
+import org.auvua.reactive.core.R;
+import org.auvua.reactive.core.RxVar;
 
 public class GoToArea extends AbstractTask {
   
   public TwoVector target;
   public TwoVector output;
   private TwoVector position;
-  private RobotModel2 robot;
+  private RobotModel robot;
   private double radius;
   
-  public GoToArea(RobotModel2 robot, TwoVector target, double radius) {
+  public GoToArea(RobotModel robot, TwoVector target, double radius) {
     this.target = target;
     this.robot = robot;
     this.radius = radius;
@@ -26,19 +29,26 @@ public class GoToArea extends AbstractTask {
     this.position = new TwoVector(robot.motion.x.pos, robot.motion.y.pos);
     
     initializeCondition("success", new OccupyingArea(position, target, radius));
-    initializeCondition("timeout", new Timeout(60.0));
+    initializeCondition("timeout", new Timeout(600.0));
     
-    Rx.when(getCondition("success"))
+    /*
+    R.when(getCondition("success"))
       .then(() -> System.out.println("Made it to coordinate " + target.x.get() + " " + target.y.get()));
+    */
     
-    PidController xControl = new PidController(robot.positionSensor.x, target.x, .25, 0, 0);
-    PidController yControl = new PidController(robot.positionSensor.y, target.y, .25, 0, 0);
+    RxVar<Double> xSetPoint = this.target.x;
+    RxVar<Double> xPos = robot.positionSensor.x;
+    RxVar<Double> xStopPos = new StoppingDistance(robot.motion.x.vel, robot.controlledAccel.x, 200, 200);
+    PidController xController = new PidController(R.var(() -> xPos.get() + xStopPos.get()), xSetPoint, 1, 0, 0);
+    xController.setSaturationLimits(-200, 200);
+    robot.thrustInput.x.setSupplier(xController);
     
-    xControl.setSaturationLimits(-100, 100);
-    yControl.setSaturationLimits(-100, 100);
-    
-    robot.thrustInput.x.setSupplier(xControl);
-    robot.thrustInput.y.setSupplier(yControl);
+    RxVar<Double> ySetPoint = this.target.y;
+    RxVar<Double> yPos = robot.positionSensor.y;
+    RxVar<Double> yStopPos = new StoppingDistance(robot.motion.y.vel, robot.controlledAccel.y, 200, 200);
+    PidController yController = new PidController(R.var(() -> yPos.get() + yStopPos.get()), ySetPoint, 1, 0, 0);
+    yController.setSaturationLimits(-200, 200);
+    robot.thrustInput.y.setSupplier(yController);
   }
   
 }

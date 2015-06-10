@@ -12,5 +12,9 @@ public interface ReactiveDependency extends Reactive {
    */
   public Collection<ReactiveDependency> getChildren();
   
+  public void calculateDependencyRank();
+  
+  public int getDependencyRank();
+  
   public void clear();
 }

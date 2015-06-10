@@ -16,24 +16,24 @@ import javax.sound.sampled.SourceDataLine;
 import org.auvua.agent.control.Differentiator;
 import org.auvua.agent.control.MovingAverageExponential;
 import org.auvua.agent.control.Timer;
-import org.auvua.reactive.core.Rx;
+import org.auvua.reactive.core.R;
 import org.auvua.reactive.core.RxTask;
 import org.auvua.reactive.core.RxVar;
 
 public class RxMouseSpeed {
 
   public static void main( String[] args ) throws LineUnavailableException {
-    Rx.initialize(1);
+    R.initialize(1);
     
-    RxVar<Double> mousePosX = Rx.var(0.0);
-    RxVar<Double> mousePosY = Rx.var(0.0);
+    RxVar<Double> mousePosX = R.var(0.0);
+    RxVar<Double> mousePosY = R.var(0.0);
     Timer time = Timer.getInstance();
     
-    RxVar<Double> mousePosXAvg = Rx.var(new MovingAverageExponential(mousePosX, .5));
-    RxVar<Double> mousePosYAvg = Rx.var(new MovingAverageExponential(mousePosY, .5));
+    RxVar<Double> mousePosXAvg = R.var(new MovingAverageExponential(mousePosX, .5));
+    RxVar<Double> mousePosYAvg = R.var(new MovingAverageExponential(mousePosY, .5));
     
-    RxVar<Double> mouseVelX = Rx.var(new Differentiator(mousePosXAvg, time));
-    RxVar<Double> mouseVelY = Rx.var(new Differentiator(mousePosYAvg, time));
+    RxVar<Double> mouseVelX = R.var(new Differentiator(mousePosXAvg, time));
+    RxVar<Double> mouseVelY = R.var(new Differentiator(mousePosYAvg, time));
 
     Point prevDrawPoint = new Point(0,0);
     Point currDrawPoint = new Point(0,0);
@@ -51,14 +51,14 @@ public class RxMouseSpeed {
     frame.setSize(new Dimension(800,600));
     frame.setVisible(true);
 
-    Rx.task(() -> {
+    R.task(() -> {
       xVelLabel.setText(String.format("X Velocity = %5.3f pixels/sec", mouseVelX.get()));
       yVelLabel.setText(String.format("Y Velocity = %5.3f pixels/sec", mouseVelY.get()));
     });
     
-    RxVar<Double> t = Rx.var(0.0);
+    RxVar<Double> t = R.var(0.0);
 
-    Rx.task(() -> {
+    R.task(() -> {
       currDrawPoint.x = t.get().intValue() % 800;
       double vel = Math.hypot(mouseVelX.get(), mouseVelY.get());
       currDrawPoint.y = (int) (-vel / 100 + 300);
@@ -85,7 +85,7 @@ public class RxMouseSpeed {
     
     boolean sound = false;
     
-    Rx.task(new Runnable() {
+    R.task(new Runnable() {
       private int i = 800;
       @Override
       public void run() {
@@ -107,7 +107,7 @@ public class RxMouseSpeed {
       }
     });
 
-    RxTask task = Rx.task(() -> {
+    RxTask task = R.task(() -> {
       Point mouseLoc = MouseInfo.getPointerInfo().getLocation();
       mousePosX.set(mouseLoc.x + 0.0);
       mousePosY.set(mouseLoc.y + 0.0);

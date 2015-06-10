@@ -15,21 +15,18 @@ public class Differentiator extends RxVar<Double> {
 	}
 	
 	public Differentiator(Supplier<Double> dependent, Supplier<Double> independent) {
-		this.lastDepValue = dependent.get();
-		this.lastIndepValue = independent.get();
-		
-		this.setSupplier(() -> {
-		  double currDepValue = dependent.get();
+	  this.lastDepValue = dependent.get();
+	  this.lastIndepValue = independent.get();
+
+	  this.setSupplier(() -> {
+	    double currDepValue = dependent.get();
 	    double currIndepValue = independent.get();
+	    if (currIndepValue == lastIndepValue) return 0.0;
 	    double derivative = (currDepValue - lastDepValue) / (currIndepValue - lastIndepValue);
-	    if(!Double.isNaN(derivative)) {
-	       this.derivative = derivative;
-	       this.lastDepValue = currDepValue;
-	       this.lastIndepValue = currIndepValue;
-	    } else {
-	      System.out.println("ERROR: NaN");
-	    }
+	    this.derivative = derivative;
+	    this.lastDepValue = currDepValue;
+	    this.lastIndepValue = currIndepValue;
 	    return this.derivative;
-		});
+	  });
 	}
 }

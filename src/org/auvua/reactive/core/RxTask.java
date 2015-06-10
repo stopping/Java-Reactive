@@ -1,7 +1,5 @@
 package org.auvua.reactive.core;
 
-import java.util.Set;
-
 public class RxTask extends StandardDependency implements ReactiveDependency, Runnable {
 
   private Runnable runnable;
@@ -10,22 +8,7 @@ public class RxTask extends StandardDependency implements ReactiveDependency, Ru
     this.clear();
     this.runnable = runnable;
     
-    if(Rx.isDetectingNewDependencies()) {
-      Rx.addNewDependency(this);
-    }
-    
-    Set<ReactiveDependency> previousDependencies = Rx.getGetDependenciesAndClear();
-
-    Rx.startDetectingGets();
-    update();
-    Rx.stopDetectingGets();
-
-    for(ReactiveDependency dep : Rx.getGetDependenciesAndClear()) {
-      this.add(dep);
-    }
-    for(ReactiveDependency dep : previousDependencies) {
-      Rx.addThreadLocalGetDependency(dep);
-    }
+    determineDependencies();
   }
 
   @Override
@@ -39,7 +22,7 @@ public class RxTask extends StandardDependency implements ReactiveDependency, Ru
 
   @Override
   public void run() {
-    Rx.doSync(this.runnable);
+    R.doSync(this.runnable);
   }
 
   @Override

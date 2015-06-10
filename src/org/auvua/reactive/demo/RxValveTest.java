@@ -1,16 +1,16 @@
 package org.auvua.reactive.demo;
 
-import org.auvua.reactive.core.Rx;
+import org.auvua.reactive.core.R;
 import org.auvua.reactive.core.RxValve;
 
 public class RxValveTest {
   public static void main (String[] args) {
-    RxValve<Double> valve = Rx.valve(0.0);
+    RxValve<Double> valve = R.valve(0.0);
     valve.setSupplier(() -> {
       return valve.get() + 1;
     });
     
-    Rx.task(() -> {
+    R.task(() -> {
       System.out.println(valve.get());
     });
     
