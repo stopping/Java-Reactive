@@ -31,24 +31,24 @@ public class GoToArea extends AbstractTask {
     initializeCondition("success", new OccupyingArea(position, target, radius));
     initializeCondition("timeout", new Timeout(600.0));
     
-    /*
+    
     R.when(getCondition("success"))
       .then(() -> System.out.println("Made it to coordinate " + target.x.get() + " " + target.y.get()));
-    */
+    
     
     RxVar<Double> xSetPoint = this.target.x;
     RxVar<Double> xPos = robot.positionSensor.x;
-    RxVar<Double> xStopPos = new StoppingDistance(robot.motion.x.vel, robot.controlledAccel.x, 200, 200);
-    PidController xController = new PidController(R.var(() -> xPos.get() + xStopPos.get()), xSetPoint, 1, 0, 0);
+    RxVar<Double> xStopPos = new StoppingDistance(robot.motion.x.vel, robot.controlledAccelX, 200, 200);
+    PidController xController = new PidController(R.var(() -> xPos.get() + xStopPos.get()), xSetPoint, 10, 0, 0);
     xController.setSaturationLimits(-200, 200);
-    robot.thrustInput.x.setSupplier(xController);
+    robot.thrustInputX.setSupplier(xController);
     
     RxVar<Double> ySetPoint = this.target.y;
     RxVar<Double> yPos = robot.positionSensor.y;
-    RxVar<Double> yStopPos = new StoppingDistance(robot.motion.y.vel, robot.controlledAccel.y, 200, 200);
-    PidController yController = new PidController(R.var(() -> yPos.get() + yStopPos.get()), ySetPoint, 1, 0, 0);
+    RxVar<Double> yStopPos = new StoppingDistance(robot.motion.y.vel, robot.controlledAccelY, 200, 200);
+    PidController yController = new PidController(R.var(() -> yPos.get() + yStopPos.get()), ySetPoint, 10, 0, 0);
     yController.setSaturationLimits(-200, 200);
-    robot.thrustInput.y.setSupplier(yController);
+    robot.thrustInputY.setSupplier(yController);
   }
   
 }

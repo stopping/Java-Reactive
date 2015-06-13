@@ -22,55 +22,56 @@ public class RobotModel implements Controllable, Triggerable {
   private Map<String, RxVar<?>> outputs = new HashMap<String, RxVar<?>>();
   
   private double mass = 1.0;
-  private double mu = 20;
   private double cD = .47;
   
   public final ThreeKinematics motion = new ThreeKinematics();
-  public final TwoVector vel = new TwoVector(motion.x.vel, motion.y.vel);
   
-  private final RxValve<Double> thrustInputX = R.valve(0.0);
-  private final RxValve<Double> thrustInputY = R.valve(0.0);
-  public final TwoVector thrustInput = new TwoVector(thrustInputX, thrustInputY);
+  public final RxValve<Double> thrustInputX = R.valve(0.0);
+  public final RxValve<Double> thrustInputY = R.valve(0.0);
+  public final RxValve<Double> thrustInputZ = R.valve(0.0);
   
-  public final TwoVector thrust = new TwoVector(
-      new RateLimiter(new HardLimit(thrustInput.x, -200, 200), 200),
-      new RateLimiter(new HardLimit(thrustInput.y, -200, 200), 200));
+  public final RxVar<Double> thrustX = new RateLimiter(new HardLimit(thrustInputX, -200, 200), 200);
+  public final RxVar<Double> thrustY = new RateLimiter(new HardLimit(thrustInputY, -200, 200), 200);
+  public final RxVar<Double> thrustZ = new RateLimiter(new HardLimit(thrustInputZ, -200, 200), 200);
   
-  public final TwoVector controlledAccel = new TwoVector(
-      R.var(() -> thrust.x.get() / mass),
-      R.var(() -> thrust.y.get() / mass));
-      
-  private TwoVector friction = new TwoVector(
-      R.var(() -> vel.r.get() != 0 ? mu * mass * - motion.x.vel.get() / vel.r.get() : 0),
-      R.var(() -> vel.r.get() != 0 ? mu * mass * - motion.y.vel.get() / vel.r.get() : 0));
+  public final RxVar<Double> controlledAccelX = R.var(() -> thrustX.get() / mass);
+  public final RxVar<Double> controlledAccelY = R.var(() -> thrustY.get() / mass);
+  public final RxVar<Double> controlledAccelZ = R.var(() -> thrustZ.get() / mass);
   
-  private TwoVector drag = new TwoVector(
-      R.var(() -> - vel.x.get() * Math.abs(vel.x.get()) * cD * .5 * 1000 * .01 * .01),
-      R.var(() -> - vel.y.get() * Math.abs(vel.y.get()) * cD * .5 * 1000 * .01 * .01));
+  private RxVar<Double> dragX = R.var(() -> - motion.x.vel.get() * Math.abs(motion.x.vel.get()) * cD * .5 * 1000 * .01 * .01);
+  private RxVar<Double> dragY = R.var(() -> - motion.y.vel.get() * Math.abs(motion.y.vel.get()) * cD * .5 * 1000 * .01 * .01);
+  private RxVar<Double> dragZ = R.var(() -> - motion.z.vel.get() * Math.abs(motion.z.vel.get()) * cD * .5 * 1000 * .01 * .01);
   
-  private TwoVector force = new TwoVector(
-      R.var(() -> thrust.x.get() + friction.x.peek() * 0 + drag.x.peek() * 1), 
-      R.var(() -> thrust.y.get() + friction.y.peek() * 0 + drag.y.peek() * 1));
+  private RxVar<Double> forceX = R.var(() -> thrustX.get() + dragX.peek() * 1);
+  private RxVar<Double> forceY = R.var(() -> thrustY.get() + dragY.peek() * 1);
+  private RxVar<Double> forceZ = R.var(() -> thrustZ.get() + dragZ.peek() * 1);
   
   public TwoVector velocitySensor = new TwoVector(
-      new FirstOrderSystem(vel.x, 5),
-      new FirstOrderSystem(vel.y, 5));
+      new FirstOrderSystem(motion.x.vel, 5),
+      new FirstOrderSystem(motion.y.vel, 5));
   
   public TwoVector positionSensor = new TwoVector(
       new Integrator(velocitySensor.x, Timer.getInstance()),
       new Integrator(velocitySensor.y, Timer.getInstance()));
   
+  public RxVar<Double> depthSensor = new FirstOrderSystem(motion.z.pos, 5);
+  
   public RobotModel() {
-    this.motion.x.accel.setSupplier(() -> force.x.get() / mass);
-    this.motion.y.accel.setSupplier(() -> force.y.get() / mass);
+    this.motion.x.accel.setSupplier(() -> forceX.get() / mass);
+    this.motion.y.accel.setSupplier(() -> forceY.get() / mass);
+    this.motion.z.accel.setSupplier(() -> forceZ.get() / mass);
     
-    inputs.put("xThrust", thrustInput.x);
-    inputs.put("yThrust", thrustInput.y);
+    inputs.put("xThrust", thrustInputX);
+    inputs.put("yThrust", thrustInputY);
+    inputs.put("zThrust", thrustInputZ);
     
     outputs.put("xPos", positionSensor.x);
     outputs.put("yPos", positionSensor.y);
-    outputs.put("xThrust", thrust.x);
-    outputs.put("yThrust", thrust.y);
+    outputs.put("depth", depthSensor);
+    
+    outputs.put("xThrust", thrustX);
+    outputs.put("yThrust", thrustY);
+    outputs.put("zThrust", thrustZ);
   }
   
   public static RobotModel getInstance() {
@@ -96,6 +97,7 @@ public class RobotModel implements Controllable, Triggerable {
       Timer.getInstance().trigger();
       thrustInputX.trigger();
       thrustInputY.trigger();
+      thrustInputZ.trigger();
     });
   }
   

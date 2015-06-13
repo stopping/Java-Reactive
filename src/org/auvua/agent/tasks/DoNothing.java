@@ -12,8 +12,8 @@ public class DoNothing extends AbstractTask {
   }
   @Override
   public void initialize() {
-    robot.thrustInput.x.setSupplier(new OpenLoopController(0.0));
-    robot.thrustInput.y.setSupplier(new OpenLoopController(0.0));
+    robot.thrustInputX.setSupplier(new OpenLoopController(0.0));
+    robot.thrustInputY.setSupplier(new OpenLoopController(0.0));
   }
 
 }

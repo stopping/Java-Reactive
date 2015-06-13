@@ -31,7 +31,7 @@ public class RobotSim {
   public static RobotModel robot = RobotModel.getInstance();
 
   public static void main( String[] args ) throws SecurityException, IOException {
-    command =  new MissionFactory().build(MissionType.POSITION_CONTROL);
+    command =  new MissionFactory().build(MissionType.SQUARE_WALK);
     command.start();
     
     buildFrames();
@@ -39,6 +39,7 @@ public class RobotSim {
     DataRecorder recorder = new DataRecorder("data.txt");
     recorder.record(robot.positionSensor.x, "xPos");
     recorder.record(robot.positionSensor.y, "yPos");
+    recorder.record(robot.velocitySensor.x, "yVel");
     recorder.start();
 
     new Thread(() -> {
@@ -66,8 +67,8 @@ public class RobotSim {
     JFrame frame = new JFrame();
     
     OperatorInterface oi = new OperatorInterface();
-    ((GoToArea) command).target.x.setSupplier(oi.target.x);
-    ((GoToArea) command).target.y.setSupplier(oi.target.y);
+    //((GoToArea) command).target.x.setSupplier(oi.target.x);
+    //((GoToArea) command).target.y.setSupplier(oi.target.y);
     
     frame.addKeyListener(oi.getKeyListener());
 
@@ -82,8 +83,8 @@ public class RobotSim {
     frame.setSize(new Dimension(800, 600));
     frame.setVisible(true);
     
-    RxVar<Double> stopPosX = new StoppingDistance(robot.motion.x.vel, robot.controlledAccel.x, 200, 200);
-    RxVar<Double> stopPosY = new StoppingDistance(robot.motion.y.vel, robot.controlledAccel.y, 200, 200);
+    RxVar<Double> stopPosX = new StoppingDistance(robot.motion.x.vel, robot.controlledAccelX, 200, 200);
+    RxVar<Double> stopPosY = new StoppingDistance(robot.motion.y.vel, robot.controlledAccelY, 200, 200);
     
     RPlane drawPlane = new RPlane(800, 600);
     
@@ -98,12 +99,13 @@ public class RobotSim {
       
       g.drawOval(x - 10, y - 10, 20, 20);
       
-      int x2 = (int) (x + robot.thrust.x.get());
-      int y2 = (int) (y + robot.thrust.y.get());
+      int x2 = (int) (x + robot.thrustX.get());
+      int y2 = (int) (y + robot.thrustY.get());
       g.setColor(Color.RED);
       g.drawLine(x, y, x2, y2);
       g.setColor(Color.BLUE);
       g.drawOval(xTarget - 5, yTarget - 5, 10, 10);
+      g.setColor(Color.YELLOW);
       g.drawOval(stopX - 5, stopY - 5, 10, 10);
       g.setColor(Color.BLACK);
     });
@@ -118,8 +120,12 @@ public class RobotSim {
     chart.observe(((GoToArea) command).target.y, "Target Position");
     chart.observe(stopPosY, "Stopping Position");
     */
-    chart.observe(robot.thrust.y, "Thrust");
-    chart.observe(robot.thrustInput.y, "Thrust Input");
+    /*
+    chart.observe(robot.thrustY, "Thrust");
+    chart.observe(robot.thrustInputY, "Thrust Input");
+    chart.observe(robot.velocitySensor.y, "Y Velocity");
+    */
+    chart.observe(robot.depthSensor, "Depth");
     
     JFrame frame2 = new JFrame();
     frame2.setSize(new Dimension(800, 600));

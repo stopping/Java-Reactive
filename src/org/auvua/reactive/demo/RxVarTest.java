@@ -19,9 +19,13 @@ public class RxVarTest {
     R.task(() -> {
       System.out.println("The sum: " + sum.get());
     });
+    
+    RxVar<Boolean> sumGreaterThanFive = R.var(() -> {
+    	return sum.get() > 5.0;
+    });
 
     R.task(() -> {
-      if(sum.get() > 5.0) {
+      if(sumGreaterThanFive.get()) {
         System.out.println("The sum of these numbers is greater than 5!");
       }
     });

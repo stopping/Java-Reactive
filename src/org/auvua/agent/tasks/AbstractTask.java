@@ -15,10 +15,18 @@ public abstract class AbstractTask extends BaseComponent implements Task {
   private Map<String, RxCondition>conditionDictionary
     = new HashMap<String, RxCondition>();
   private Collection<ReactiveDependency> newReactiveDependencies;
+  private boolean started = false;
   
   public abstract void initialize();
   
   public void start() {
+	if (started) {
+		System.out.println("Not starting " + toString() + ", already started.");
+		return;
+	} else {
+		System.out.println("Starting " + toString());
+	}
+	started = true;
     R.startDetectingNewDependencies();
     initialize();
     R.stopDetectingNewDependencies();
@@ -26,6 +34,13 @@ public abstract class AbstractTask extends BaseComponent implements Task {
   }
   
   public void stop() {
+	if (!started) {
+		System.out.println("Not stopping " + toString() + ", already stopped.");
+		return;
+	} else {
+		System.out.println("Stopping " + toString());
+	}
+	started = false;
     for(ReactiveDependency dep : newReactiveDependencies) {
       dep.clear();
     }
