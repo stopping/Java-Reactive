@@ -1,4 +1,4 @@
-package org.auvua.agent;
+package org.auvua.model.motion;
 public class ThreeKinematics {
   
   public final KinematicsLinear x;

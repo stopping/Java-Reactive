@@ -2,7 +2,6 @@ package org.auvua.model;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.auvua.agent.ThreeKinematics;
 import org.auvua.agent.TwoVector;
 import org.auvua.agent.control.Controllable;
 import org.auvua.agent.control.HardLimit;
@@ -10,6 +9,7 @@ import org.auvua.agent.control.RateLimiter;
 import org.auvua.agent.control.Timer;
 import org.auvua.agent.signal.FirstOrderSystem;
 import org.auvua.agent.signal.Integrator;
+import org.auvua.model.motion.ThreeKinematics;
 import org.auvua.reactive.core.R;
 import org.auvua.reactive.core.RxValve;
 import org.auvua.reactive.core.RxVar;

@@ -15,6 +15,8 @@ public class MissionFactory {
         return new DrivingMission().getStartTask();
       case POSITION_CONTROL:
         return new GoToArea(robot, new TwoVector(), 10);
+      case REMOTE_CONTROL:
+    	return null;
       default:
         return new DoNothing(robot);
     }
@@ -23,6 +25,7 @@ public class MissionFactory {
   public enum MissionType {
     RANDOM_WALK,
     SQUARE_WALK,
-    POSITION_CONTROL
+    POSITION_CONTROL,
+    REMOTE_CONTROL
   }
 }

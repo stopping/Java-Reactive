@@ -1,4 +1,4 @@
-package org.auvua.agent;
+package org.auvua.model.motion;
 import org.auvua.agent.control.Timer;
 import org.auvua.agent.signal.Integrator;
 import org.auvua.reactive.core.R;
