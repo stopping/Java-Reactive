@@ -9,8 +9,8 @@ public class MissionFactory {
 
   public Task build(MissionType type) {
     switch(type) {
-      case RANDOM_WALK:
-        return new RandomWalkMission().getStartTask();
+      //case RANDOM_WALK:
+        //return new RandomWalkMission().getStartTask();
       case SQUARE_WALK:
         return new DrivingMission().getStartTask();
       case POSITION_CONTROL:

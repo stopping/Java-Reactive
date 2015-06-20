@@ -2,11 +2,8 @@ package org.auvua.reactive.core;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,8 +26,6 @@ public class R {
   private static Set<Thread> threadsDetectingSets = new HashSet<Thread>();
   private static Set<Thread> threadsDetectingNewDeps = new HashSet<Thread>();
   
-  private static Map<ReactiveDependency, Integer> dependencyRanks = new HashMap<ReactiveDependency, Integer>();
-  
   private static ExecutorService executor;
 
   public static <E> RxVar<E> var(E value) {
@@ -43,6 +38,10 @@ public class R {
 
   public static RxTask task(Runnable runnable) {
     return new RxTask(runnable);
+  }
+
+  public static RxTask task() {
+    return new RxTask();
   }
   
   public static RxCondition cond(Supplier<Boolean> function) {

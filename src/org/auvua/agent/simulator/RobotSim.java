@@ -15,7 +15,6 @@ import org.auvua.agent.control.DataRecorder;
 import org.auvua.agent.control.StoppingDistance;
 import org.auvua.agent.control.Timer;
 import org.auvua.agent.oi.OperatorInterface;
-import org.auvua.agent.tasks.GoToArea;
 import org.auvua.agent.tasks.MissionFactory;
 import org.auvua.agent.tasks.MissionFactory.MissionType;
 import org.auvua.agent.tasks.Task;
@@ -67,8 +66,6 @@ public class RobotSim {
     JFrame frame = new JFrame();
     
     OperatorInterface oi = new OperatorInterface();
-    //((GoToArea) command).target.x.setSupplier(oi.target.x);
-    //((GoToArea) command).target.y.setSupplier(oi.target.y);
     
     frame.addKeyListener(oi.getKeyListener());
 
@@ -91,8 +88,6 @@ public class RobotSim {
     drawPlane.addPainter((g) -> {
       int x = robot.motion.x.pos.get().intValue() + 400;
       int y = robot.motion.y.pos.get().intValue() + 300;
-      int xTarget = ((GoToArea) command).target.x.get().intValue() + 400;
-      int yTarget = ((GoToArea) command).target.y.get().intValue() + 300;
       
       int stopX = stopPosX.get().intValue() + x;
       int stopY = stopPosY.get().intValue() + y;
@@ -103,8 +98,6 @@ public class RobotSim {
       int y2 = (int) (y + robot.thrustY.get());
       g.setColor(Color.RED);
       g.drawLine(x, y, x2, y2);
-      g.setColor(Color.BLUE);
-      g.drawOval(xTarget - 5, yTarget - 5, 10, 10);
       g.setColor(Color.YELLOW);
       g.drawOval(stopX - 5, stopY - 5, 10, 10);
       g.setColor(Color.BLACK);

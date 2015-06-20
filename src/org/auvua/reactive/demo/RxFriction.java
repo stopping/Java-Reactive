@@ -13,8 +13,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.auvua.agent.control.Integrator;
 import org.auvua.agent.control.Timer;
+import org.auvua.agent.signal.Integrator;
 import org.auvua.reactive.core.R;
 import org.auvua.reactive.core.RxVar;
 

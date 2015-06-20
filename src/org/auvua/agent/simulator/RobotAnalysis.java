@@ -9,10 +9,10 @@ import java.util.Scanner;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import org.auvua.agent.control.Differentiator;
-import org.auvua.agent.control.Integrator;
-import org.auvua.agent.control.TimeInvariantSystem;
 import org.auvua.agent.control.Timer;
+import org.auvua.agent.signal.Differentiator;
+import org.auvua.agent.signal.Integrator;
+import org.auvua.agent.signal.TimeInvariantSystem;
 import org.auvua.model.RobotModel;
 import org.auvua.reactive.core.R;
 import org.auvua.reactive.core.RxVar;
@@ -32,7 +32,7 @@ public class RobotAnalysis {
     TimeInvariantSystem controller = new TimeInvariantSystem(diff);
     controller.addPole(-20, 0);
     controller.scale(1);
-    RobotModel.getInstance().thrustInput.x.setSupplier(() -> controller.get());
+    RobotModel.getInstance().thrustInputX.setSupplier(() -> controller.get());
     
     RxVar<Double> outputDerivative = new Differentiator(output);
 

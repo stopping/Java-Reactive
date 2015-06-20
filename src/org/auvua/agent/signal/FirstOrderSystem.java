@@ -1,4 +1,4 @@
-package org.auvua.agent.control;
+package org.auvua.agent.signal;
 
 import org.auvua.agent.control.Timer;
 import org.auvua.reactive.core.RxVar;

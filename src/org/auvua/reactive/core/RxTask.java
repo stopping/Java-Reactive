@@ -3,12 +3,14 @@ package org.auvua.reactive.core;
 public class RxTask extends StandardDependency implements ReactiveDependency, Runnable {
 
   private Runnable runnable;
+  
+  public RxTask() {
+    this(() -> {});
+  }
 
   public RxTask(Runnable runnable) {
     this.clear();
-    this.runnable = runnable;
-    
-    determineDependencies();
+    setRunnable(runnable);
   }
 
   @Override
@@ -36,5 +38,10 @@ public class RxTask extends StandardDependency implements ReactiveDependency, Ru
         }
       }
     }
+  }
+  
+  public void setRunnable(Runnable runnable) {
+    this.runnable = runnable;
+    determineDependencies();
   }
 }

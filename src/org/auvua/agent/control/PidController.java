@@ -1,4 +1,6 @@
 package org.auvua.agent.control;
+import org.auvua.agent.signal.Differentiator;
+import org.auvua.agent.signal.Integrator;
 import org.auvua.reactive.core.R;
 import org.auvua.reactive.core.RxVar;
 

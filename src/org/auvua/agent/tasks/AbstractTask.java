@@ -21,10 +21,10 @@ public abstract class AbstractTask extends BaseComponent implements Task {
   
   public void start() {
 	if (started) {
-		System.out.println("Not starting " + toString() + ", already started.");
+		//System.out.println("Not starting " + toString() + ", already started.");
 		return;
 	} else {
-		System.out.println("Starting " + toString());
+		//System.out.println("Starting " + toString());
 	}
 	started = true;
     R.startDetectingNewDependencies();
@@ -35,10 +35,10 @@ public abstract class AbstractTask extends BaseComponent implements Task {
   
   public void stop() {
 	if (!started) {
-		System.out.println("Not stopping " + toString() + ", already stopped.");
+		//System.out.println("Not stopping " + toString() + ", already stopped.");
 		return;
 	} else {
-		System.out.println("Stopping " + toString());
+		//System.out.println("Stopping " + toString());
 	}
 	started = false;
     for(ReactiveDependency dep : newReactiveDependencies) {
@@ -60,6 +60,11 @@ public abstract class AbstractTask extends BaseComponent implements Task {
       throw new IllegalStateException("Condition \"" + name + "\" is undeclared for this task.");
     }
     getCondition(name).setSupplier(supplier);
+  }
+  
+  // Syntactic sugar for composing conditions and triggers
+  public RxCondition when(String name) {
+    return getCondition(name);
   }
   
   public RxCondition getCondition(String name) {

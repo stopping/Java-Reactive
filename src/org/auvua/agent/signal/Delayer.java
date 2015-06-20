@@ -1,8 +1,9 @@
-package org.auvua.agent.control;
+package org.auvua.agent.signal;
 
 import java.util.LinkedList;
 import java.util.List;
 
+import org.auvua.agent.control.Timer;
 import org.auvua.reactive.core.RxVar;
 
 public class Delayer extends RxVar<Double> {

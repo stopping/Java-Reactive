@@ -12,9 +12,9 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import org.auvua.agent.TwoVector;
-import org.auvua.agent.control.Delayer;
-import org.auvua.agent.control.Differentiator;
 import org.auvua.agent.control.Timer;
+import org.auvua.agent.signal.Delayer;
+import org.auvua.agent.signal.Differentiator;
 import org.auvua.agent.simulator.Sensor;
 import org.auvua.reactive.core.R;
 import org.auvua.reactive.core.RxVar;

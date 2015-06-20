@@ -8,9 +8,9 @@ import java.awt.image.BufferedImage;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import org.auvua.agent.control.Differentiator;
 import org.auvua.agent.control.StoppingDistanceCalculator;
 import org.auvua.agent.control.Timer;
+import org.auvua.agent.signal.Differentiator;
 import org.auvua.reactive.core.R;
 import org.auvua.reactive.core.RxVar;
 

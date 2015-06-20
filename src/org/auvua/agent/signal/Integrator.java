@@ -1,7 +1,8 @@
-package org.auvua.agent.control;
+package org.auvua.agent.signal;
 
 import java.util.function.Supplier;
 
+import org.auvua.agent.control.Timer;
 import org.auvua.reactive.core.RxVar;
 
 public class Integrator extends RxVar<Double> {

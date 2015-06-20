@@ -15,12 +15,14 @@ public class RxTaskBuilder {
       this.predicate = predicate;
     }
     
-    public RxTaskTrigger then(Runnable ... tasks) {
-      R.task(() -> {
+    public RxTaskTrigger then(Runnable ... runnables) {
+      RxTask task = R.task();
+      task.setRunnable(() -> {
         if(predicate.get()) {
-          for (Runnable task : tasks) {
-            task.run();
+          for (Runnable runnable : runnables) {
+            runnable.run();
           }
+          task.setRunnable(() -> {});
         }
       });
       return this;

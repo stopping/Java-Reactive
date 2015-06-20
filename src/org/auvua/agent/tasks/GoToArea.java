@@ -1,7 +1,6 @@
 package org.auvua.agent.tasks;
 
 import org.auvua.agent.TwoVector;
-import org.auvua.agent.control.Integrator;
 import org.auvua.agent.control.PidController;
 import org.auvua.agent.control.StoppingDistance;
 import org.auvua.model.RobotModel;
@@ -20,7 +19,7 @@ public class GoToArea extends AbstractTask {
     this.target = target;
     this.robot = robot;
     this.radius = radius;
-    declareCondition("success");
+    declareCondition("inArea");
     declareCondition("timeout");
   }
   
@@ -28,13 +27,8 @@ public class GoToArea extends AbstractTask {
   public void initialize() {
     this.position = new TwoVector(robot.motion.x.pos, robot.motion.y.pos);
     
-    initializeCondition("success", new OccupyingArea(position, target, radius));
+    initializeCondition("inArea", new OccupyingArea(position, target, radius));
     initializeCondition("timeout", new Timeout(600.0));
-    
-    
-    R.when(getCondition("success"))
-      .then(() -> System.out.println("Made it to coordinate " + target.x.get() + " " + target.y.get()));
-    
     
     RxVar<Double> xSetPoint = this.target.x;
     RxVar<Double> xPos = robot.positionSensor.x;

@@ -13,9 +13,9 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 
-import org.auvua.agent.control.Differentiator;
-import org.auvua.agent.control.MovingAverageExponential;
 import org.auvua.agent.control.Timer;
+import org.auvua.agent.signal.Differentiator;
+import org.auvua.agent.signal.MovingAverageExponential;
 import org.auvua.reactive.core.R;
 import org.auvua.reactive.core.RxTask;
 import org.auvua.reactive.core.RxVar;

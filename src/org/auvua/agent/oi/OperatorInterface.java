@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.auvua.agent.TwoVector;
-import org.auvua.agent.control.Integrator;
+import org.auvua.agent.signal.Integrator;
 
 public class OperatorInterface {
   
