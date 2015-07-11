@@ -15,16 +15,16 @@ import org.auvua.reactive.core.RxValve;
 import org.auvua.reactive.core.RxVar;
 import org.auvua.reactive.core.Triggerable;
 
-public class RobotModel2 implements Controllable, Triggerable {
+public class RobotModel3 implements Controllable, Triggerable {
   
-  private static RobotModel2 model;
+  private static RobotModel3 model;
   private Map<String, RxVar<?>> inputs = new HashMap<String, RxVar<?>>();
   private Map<String, RxVar<?>> outputs = new HashMap<String, RxVar<?>>();
   
   private double mass = 1.0;
-  private double cdSurge = .47  * .5 * 1000 * .01 * .01 * 5;
-  private double cdSway = .47  * .5 * 1000 * .01 * .01 * 15;
-  private double cdHeave = .47  * .5 * 1000 * .01 * .01 * 15;
+  private double cdSurge = .47  * .5 * 1000 * .01 * .01 * 2;
+  private double cdSway = .47  * .5 * 1000 * .01 * .01 * 6;
+  private double cdHeave = .47  * .5 * 1000 * .01 * .01 * 6;
   private double momentOfInertia = 500.0;
   
   public final ThreeKinematics motion = new ThreeKinematics();
@@ -44,6 +44,8 @@ public class RobotModel2 implements Controllable, Triggerable {
   private final RxVar<Double> thrustSurge = R.var(() -> (surgeLeft.get() + surgeRight.get()) / mass);
   private final RxVar<Double> thrustSway = R.var(() -> (swayFront.get() + swayBack.get()) / mass);
   private final RxVar<Double> thrustHeave = R.var(() -> heave.get() / mass);
+  
+  //private final RxVar<Quaternion> or
   
   private final RxVar<Double> angularAccel = R.var(0.0);
   private final RxVar<Double> angularVel = new Integrator(angularAccel);
@@ -84,7 +86,7 @@ public class RobotModel2 implements Controllable, Triggerable {
   
   public RxVar<Double> depthSensor = new FirstOrderSystem(motion.z.pos, 5);
   
-  public RobotModel2() {
+  public RobotModel3() {
 	this.angularAccel.setSupplier(() -> torque.get() / momentOfInertia);
     this.motion.x.accel.setSupplier(() -> (forceSway.get() * Math.sin(angle.get()) + forceSurge.get() * Math.cos(angle.get())) / mass);
     this.motion.y.accel.setSupplier(() -> (-forceSway.get() * Math.cos(angle.get()) + forceSurge.get() * Math.sin(angle.get())) / mass);
@@ -95,8 +97,8 @@ public class RobotModel2 implements Controllable, Triggerable {
     outputs.put("depth", depthSensor);
   }
   
-  public static RobotModel2 getInstance() {
-    if (model == null) model = new RobotModel2();
+  public static RobotModel3 getInstance() {
+    if (model == null) model = new RobotModel3();
     return model;
   }
 

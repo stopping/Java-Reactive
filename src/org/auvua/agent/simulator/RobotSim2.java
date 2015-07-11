@@ -24,6 +24,7 @@ import org.auvua.model.RobotModel2;
 import org.auvua.reactive.core.RxVar;
 import org.auvua.view.RChart;
 import org.auvua.view.RPlane;
+import org.auvua.view.RobotRenderer;
 
 public class RobotSim2 {
   
@@ -34,13 +35,28 @@ public class RobotSim2 {
   public static void main( String[] args ) throws SecurityException, IOException {
     
     buildFrames();
+    
+    RobotRenderer r = new RobotRenderer();
 
     new Thread(() -> {
       while(true) {
         robot.trigger();
-  
+        r.update();
+        
         try {
           Thread.sleep(30);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+    }).start();
+    
+    new Thread(() -> {
+      while(true) {
+        r.update();
+        
+        try {
+          Thread.sleep(50);
         } catch (InterruptedException e) {
           e.printStackTrace();
         }
